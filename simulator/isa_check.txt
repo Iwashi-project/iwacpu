@@ -1,0 +1,73 @@
+11/8追記
+
+自作命令
+
+IN
+OUT
+ROT
+
+==================================================================
+
+11/5追記
+
+追加命令
+
+---RV32M Standard Extension---
+x MUL
+x DIV
+---RV32F Standard Extension---
+FLW
+FSW
+FADDS
+FSUBS
+FMULS
+FDIVS
+FEQS
+FLTS
+FLES
+FMVSX // move int to float
+x FMVXS // move float to int)
+FCVTSW // convert int to float
+FCVTWS // convert float to int
+FSQRTS
+FSGNJXS
+
+==================================================================
+
+命令：
+lui rd, imm
+  (load upper immediate)
+  32bit定数(ただし上位20bitのみ,下位12bitはゼロ埋め)の生成
+auipc rd, imm
+  (add upper immediate to pc)
+  pcに32bit定数(ただし下位12bitはゼロ埋め)を加え、その結果をrdに入れる
+  すなわち、
+  次のpc=今のpc+imm
+  rd=次のpc
+  (auipcとjalrを組み合わせて任意のpcの絶対アドレスを取ることができるようになるというけど、pcが飛ぶのでluiとjalrのほうがわかりやすい)
+jal rd, imm
+  (jump and link)
+  immは符号付きオフセット,2(バイト)の倍数を取るためimm[0]はフェッチしてきた命令にはない
+  符号付き21bit定数であることに注意,範囲は,-1048576~1048575
+  (命令長は全て4バイトなのでimm[1]も必然的に0だと思うのだが…)
+  次のpc=今のpc+imm
+  rd=今のpc+4
+  つまり,pc=100(十進) jal r5, -32 では,次のpc=68,r5=104となる
+jalr rd, rs1, imm
+  (jump and link register)
+  immは符号付き12bit定数,よって範囲は,-2048~2047
+  次のpc=(rs1+imm)の最下位ビットを0としたもの
+  rd=今のpc+4
+  つまり,pc=100 jalr r5, r6, -32 では,次のpc=r6-32,r5=104となる
+bxx rs1, rs2, imm
+  (branch instructions)
+  immはやはり2の倍数を取るためimm[0]はフェッチして来た命令にはない
+  符号付き13bit定数であることに注意,範囲は,-4096~4095
+  (分岐する場合)次のpc=今のpc+imm
+lx rd, rs1, imm
+  (load instructions)
+  符号拡張かゼロ埋めか,それとリトルエンディアンであることに注意
+  例えば, lh r5, r6, 12 では、 r5 = (M[r6+12]+(M[r6+13]<<8))の先頭ビットを32bitまで符号拡張
+sx rs1, rs2, imm
+  (store instructions)
+  こちらもリトルエンディアンに注意、shとsbはいずれもレジスタの下位ビットの方をストア
