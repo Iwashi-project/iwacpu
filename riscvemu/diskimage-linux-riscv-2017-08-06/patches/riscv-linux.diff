@@ -1,0 +1,56 @@
+diff --git a/arch/riscv/include/uapi/asm/unistd.h b/arch/riscv/include/uapi/asm/unistd.h
+index aedba7d..d421dcf 100644
+--- a/arch/riscv/include/uapi/asm/unistd.h
++++ b/arch/riscv/include/uapi/asm/unistd.h
+@@ -11,6 +11,8 @@
+  *   GNU General Public License for more details.
+  */
+ 
++#define __ARCH_WANT_RENAMEAT
++
+ #include <asm-generic/unistd.h>
+ 
+ #define __NR_sysriscv  __NR_arch_specific_syscall
+diff --git a/arch/riscv/kernel/process.c b/arch/riscv/kernel/process.c
+index c10146a..a9aad68 100644
+--- a/arch/riscv/kernel/process.c
++++ b/arch/riscv/kernel/process.c
+@@ -78,7 +78,7 @@ void start_thread(struct pt_regs *regs, unsigned long pc,
+ {
+ 	regs->sstatus = SR_PIE /* User mode, irqs on */ | SR_FS_INITIAL;
+ #ifndef CONFIG_RV_PUM
+-	regs->sstatus |= SR_SUM
++	regs->sstatus |= SR_SUM;
+ #endif
+ 	regs->sepc = pc;
+ 	regs->sp = sp;
+diff --git a/drivers/clocksource/timer-riscv.c b/drivers/clocksource/timer-riscv.c
+index 9ffc674..fe77922 100644
+--- a/drivers/clocksource/timer-riscv.c
++++ b/drivers/clocksource/timer-riscv.c
+@@ -44,7 +44,7 @@ static struct clocksource riscv_clocksource = {
+ 	.name = "riscv_clocksource",
+ 	.rating = 300,
+ 	.read = riscv_rdtime,
+-	.mask = BITS_PER_LONG,
++	.mask = CLOCKSOURCE_MASK(BITS_PER_LONG),
+ 	.flags = CLOCK_SOURCE_IS_CONTINUOUS,
+ };
+ 
+@@ -83,11 +83,11 @@ void __init time_init(void)
+ 	u32 prop;
+ 
+ 	cpu = of_find_node_by_path("/cpus");
+-	if (!cpu || !of_property_read_u32(cpu, "timebase-frequency", &riscv_timebase)) {
+-		printk(KERN_WARN "RISC-V system with no 'timebase-frequency' in DTS\n");
+-		return;
+-	}
+-
++	if (!cpu || of_property_read_u32(cpu, "timebase-frequency", &prop)) {
++		printk(KERN_WARNING "RISC-V system with no 'timebase-frequency' in DTS\n");
++                return;
++        }
++        riscv_timebase = prop;
+ 	lpj_fine = riscv_timebase / HZ;
+ 
+ 	clocksource_register_hz(&riscv_clocksource, riscv_timebase);
