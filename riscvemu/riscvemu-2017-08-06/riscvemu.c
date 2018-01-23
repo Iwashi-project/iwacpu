@@ -782,18 +782,7 @@ int main(int argc, char **argv)
         BlockDevice *drive;
         char *fname;
         fname = get_file_path(p->cfg_filename, p->tab_drive[i].filename);
-#ifdef CONFIG_FS_NET
-        if (is_url(fname)) {
-            net_completed = FALSE;
-            drive = block_device_init_http(fname, 128 * 1024,
-                                           net_start_cb, NULL);
-            /* wait until the drive is initialized */
-            fs_net_event_loop(net_poll_cb, NULL);
-        } else
-#endif
-        {
-            drive = block_device_init(fname, drive_mode);
-        }
+        drive = block_device_init(fname, drive_mode);
         free(fname);
         p->tab_drive[i].block_dev = drive;
     }
