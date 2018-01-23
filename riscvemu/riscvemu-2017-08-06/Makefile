@@ -25,15 +25,9 @@
 # if set, network filesystem is enabled. libcurl and libcrypto
 # (openssl) must be installed.
 CONFIG_FS_NET=y
-# SDL support (optional)
-CONFIG_SDL=y
 # if set, compile the 128 bit emulator. Note: the 128 bit target does
 # not compile if gcc does not support the int128 type (32 bit hosts).
 CONFIG_INT128=y
-# build x86emu
-CONFIG_X86EMU=y
-# win32 build (not usable yet)
-#CONFIG_WIN32=y
 # user space network redirector
 CONFIG_SLIRP=y
 
@@ -52,16 +46,6 @@ LDFLAGS=
 
 bindir=/usr/local/bin
 INSTALL=install
-
-PROGS+= riscvemu32$(EXE)
-ifndef CONFIG_WIN32
-PROGS+=riscvemu
-ifdef CONFIG_FS_NET
-PROGS+=build_filelist splitimg
-endif
-endif
-
-all: $(PROGS)
 
 EMU_OBJS:=virtio.o pci.o fs.o cutils.o iomem.o simplefb.o \
     json.o machine.o
@@ -83,14 +67,6 @@ ifdef CONFIG_WIN32
 EMU_LIBS+=-lwsock32
 endif # CONFIG_WIN32
 endif # CONFIG_FS_NET
-ifdef CONFIG_SDL
-EMU_LIBS+=-lSDL
-EMU_OBJS+=sdl.o
-CFLAGS+=-DCONFIG_SDL
-ifdef CONFIG_WIN32
-LDFLAGS+=-mwindows
-endif
-endif
 
 RISCVEMU_OBJS:=$(EMU_OBJS) riscvemu.o riscv_machine.o softfp.o
 
@@ -99,16 +75,6 @@ riscvemu32$(EXE): riscv_cpu32.o $(RISCVEMU_OBJS)
 
 riscv_cpu32.o: riscv_cpu.c
 	$(CC) $(CFLAGS) -DMAX_XLEN=32 -c -o $@ $<
-
-build_filelist: build_filelist.o fs_utils.o cutils.o
-	$(CC) $(LDFLAGS) -o $@ $^ -lm
-
-splitimg: splitimg.o
-	$(CC) $(LDFLAGS) -o $@ $^
-
-install: $(PROGS)
-	$(STRIP) $(PROGS)
-	$(INSTALL) -m755 $(PROGS) "$(DESTDIR)$(bindir)"
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
