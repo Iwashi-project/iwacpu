@@ -1,5 +1,0 @@
-# compile verilog/system verilog design source files
-verilog xil_defaultlib  "design_1_wrapper_func_synth.v"
-
-# Do not sort compile order
-nosort

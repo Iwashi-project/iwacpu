@@ -7,7 +7,6 @@ module core_reg
    input [4:0] FWADDR,
 
    input  WE,
-   input  FWE,
    input [31:0] WDATA,
    input  INE,
    input [7:0] INDATA,
@@ -29,7 +28,7 @@ module core_reg
 
  (* mark_debug = "true" *)   reg [31:0] reg1, reg2, reg3, reg4, reg5, reg6, reg7, reg8, reg9, reg10, reg11, reg12, reg13, reg14, reg15, reg16, reg17, reg18, reg19, reg20, reg21, reg22, reg23, reg24, reg25, reg26, reg27, reg28, reg29, reg30, reg31;
  (* mark_debug = "true" *)  reg [31:0] freg1, freg2, freg3, freg4, freg5, freg6, freg7, freg8, freg9, freg10, freg11, freg12, freg13, freg14, freg15, freg16, freg17, freg18, freg19, freg20, freg21, freg22, freg23, freg24, freg25, freg26, freg27, freg28, freg29, freg30, freg31;
-   reg _WE, _FWE;
+   reg _WE;
    reg _INE;
 
    // 整数レジスタ write
@@ -169,38 +168,38 @@ module core_reg
 				freg30 <= 0;
 				freg31 <= 0;
       end else begin
-        _FWE <= FWE;
-        if(_FWE && (FWADDR == 5'd1)) freg1 <= WDATA;
-        if(_FWE && (FWADDR == 5'd2)) freg2 <= WDATA;
-        if(_FWE && (FWADDR == 5'd3)) freg3 <= WDATA;
-        if(_FWE && (FWADDR == 5'd4)) freg4 <= WDATA;
-        if(_FWE && (FWADDR == 5'd5)) freg5 <= WDATA;
-        if(_FWE && (FWADDR == 5'd6)) freg6 <= WDATA;
-        if(_FWE && (FWADDR == 5'd7)) freg7 <= WDATA;
-        if(_FWE && (FWADDR == 5'd8)) freg8 <= WDATA;
-        if(_FWE && (FWADDR == 5'd9)) freg9 <= WDATA;
-        if(_FWE && (FWADDR == 5'd10)) freg10 <= WDATA;
-        if(_FWE && (FWADDR == 5'd11)) freg11 <= WDATA;
-        if(_FWE && (FWADDR == 5'd12)) freg12 <= WDATA;
-        if(_FWE && (FWADDR == 5'd13)) freg13 <= WDATA;
-        if(_FWE && (FWADDR == 5'd14)) freg14 <= WDATA;
-        if(_FWE && (FWADDR == 5'd15)) freg15 <= WDATA;
-        if(_FWE && (FWADDR == 5'd16)) freg16 <= WDATA;
-        if(_FWE && (FWADDR == 5'd17)) freg17 <= WDATA;
-        if(_FWE && (FWADDR == 5'd18)) freg18 <= WDATA;
-        if(_FWE && (FWADDR == 5'd19)) freg19 <= WDATA;
-        if(_FWE && (FWADDR == 5'd20)) freg20 <= WDATA;
-        if(_FWE && (FWADDR == 5'd21)) freg21 <= WDATA;
-        if(_FWE && (FWADDR == 5'd22)) freg22 <= WDATA;
-        if(_FWE && (FWADDR == 5'd23)) freg23 <= WDATA;
-        if(_FWE && (FWADDR == 5'd24)) freg24 <= WDATA;
-        if(_FWE && (FWADDR == 5'd25)) freg25 <= WDATA;
-        if(_FWE && (FWADDR == 5'd26)) freg26 <= WDATA;
-        if(_FWE && (FWADDR == 5'd27)) freg27 <= WDATA;
-        if(_FWE && (FWADDR == 5'd28)) freg28 <= WDATA;
-        if(_FWE && (FWADDR == 5'd29)) freg29 <= WDATA;
-        if(_FWE && (FWADDR == 5'd30)) freg30 <= WDATA;
-        if(_FWE && (FWADDR == 5'd31)) freg31 <= WDATA;
+        _WE <= WE;
+        if(_WE && (FWADDR == 5'd1)) freg1 <= WDATA;
+        if(_WE && (FWADDR == 5'd2)) freg2 <= WDATA;
+        if(_WE && (FWADDR == 5'd3)) freg3 <= WDATA;
+        if(_WE && (FWADDR == 5'd4)) freg4 <= WDATA;
+        if(_WE && (FWADDR == 5'd5)) freg5 <= WDATA;
+        if(_WE && (FWADDR == 5'd6)) freg6 <= WDATA;
+        if(_WE && (FWADDR == 5'd7)) freg7 <= WDATA;
+        if(_WE && (FWADDR == 5'd8)) freg8 <= WDATA;
+        if(_WE && (FWADDR == 5'd9)) freg9 <= WDATA;
+        if(_WE && (FWADDR == 5'd10)) freg10 <= WDATA;
+        if(_WE && (FWADDR == 5'd11)) freg11 <= WDATA;
+        if(_WE && (FWADDR == 5'd12)) freg12 <= WDATA;
+        if(_WE && (FWADDR == 5'd13)) freg13 <= WDATA;
+        if(_WE && (FWADDR == 5'd14)) freg14 <= WDATA;
+        if(_WE && (FWADDR == 5'd15)) freg15 <= WDATA;
+        if(_WE && (FWADDR == 5'd16)) freg16 <= WDATA;
+        if(_WE && (FWADDR == 5'd17)) freg17 <= WDATA;
+        if(_WE && (FWADDR == 5'd18)) freg18 <= WDATA;
+        if(_WE && (FWADDR == 5'd19)) freg19 <= WDATA;
+        if(_WE && (FWADDR == 5'd20)) freg20 <= WDATA;
+        if(_WE && (FWADDR == 5'd21)) freg21 <= WDATA;
+        if(_WE && (FWADDR == 5'd22)) freg22 <= WDATA;
+        if(_WE && (FWADDR == 5'd23)) freg23 <= WDATA;
+        if(_WE && (FWADDR == 5'd24)) freg24 <= WDATA;
+        if(_WE && (FWADDR == 5'd25)) freg25 <= WDATA;
+        if(_WE && (FWADDR == 5'd26)) freg26 <= WDATA;
+        if(_WE && (FWADDR == 5'd27)) freg27 <= WDATA;
+        if(_WE && (FWADDR == 5'd28)) freg28 <= WDATA;
+        if(_WE && (FWADDR == 5'd29)) freg29 <= WDATA;
+        if(_WE && (FWADDR == 5'd30)) freg30 <= WDATA;
+        if(_WE && (FWADDR == 5'd31)) freg31 <= WDATA;
       end
    end
 
