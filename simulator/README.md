@@ -21,11 +21,17 @@ wfiやfenceはnop扱い
 elfの中身を該当するメモリアドレスに格納している(例えば M[80000000]: 1F00006F)
 
 csrの初期値は現在、
+
 param->csr[param->csr_rtable["mip"]] = 0x8;
+
 param->csr[param->csr_rtable["misa"]] =
+
   (1 << 30) |
+
   (1 << ('I' - 'A')) |
+
   (1 << ('A' - 'A'));
+
 param->csr[param->csr_rtable["mhartid"]] = 0;
 
 現在、elfのsectionの読み取りは固定値にしています。もし読み取るelfファイルを変えた場合は、sim_source/sim.cppのset_elf_data関数の中を書き換えることになります。余裕があれば動的な読み取りを実装します。
