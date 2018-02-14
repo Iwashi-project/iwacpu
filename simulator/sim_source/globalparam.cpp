@@ -130,7 +130,7 @@ void print_standard_reg(param_t* param) {
     if (i % 8 == 0) printf("\n");
     printf("r%02d:%08X ", i, param->reg[i]);
   }
-  printf("\n");
+  /*printf("\n");
   Loop(i, 32) {
     if (i % 8 == 0) printf("\n");
     if(param->f_display) printf("f%02d:%8f ", i, param->freg[i]);
@@ -139,6 +139,6 @@ void print_standard_reg(param_t* param) {
       ifm.f = param->freg[i];
       printf("f%02d:%08X ", i, ifm.i);
     }
-  }
+  }*/
   return;
 }
