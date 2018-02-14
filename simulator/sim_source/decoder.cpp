@@ -318,6 +318,16 @@ void decode_all(param_t* param) {
           print_unknown_inst(param, 1349, i, inst);
         }
         break;
+      case 0b0001111: // fence
+        decode_i_type(param, i, inst);
+        switch (inst & 0x7000) {
+        case 0x0000: // FENCE
+          (param->decoded)[i][0] = FENCE;
+          break;
+        default:
+          print_unknown_inst(param, 1359, i, inst);
+        }
+        break;
       case 0b0001011: // custom-0
         if ((inst & 0x7000) == 0x1000) {
           decode_r_type(param, i, inst);

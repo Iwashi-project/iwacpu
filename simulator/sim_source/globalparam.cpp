@@ -110,15 +110,11 @@ void init_param (param_t* param) {
 
   /* csr_init_val */
   param->last_written_csr = 0xfff;
+  param->csr[param->csr_rtable["mip"]] = 0x8;
   param->csr[param->csr_rtable["misa"]] =
     (1 << 30) |
-    (1 << ('S' - 'A')) |
-    (1 << ('U' - 'A')) |
     (1 << ('I' - 'A')) |
-    (1 << ('M' - 'A')) |
-    (1 << ('A' - 'A')) |
-    (1 << ('F' - 'A')) |
-    (1 << ('C' - 'A'));
+    (1 << ('A' - 'A'));
   param->csr[param->csr_rtable["mhartid"]] = 0;
 }
 

@@ -476,8 +476,9 @@ void exec_main(param_t* param) {
     set_i_type(param, &rd, &rs1, &imm);
     imm &= 0x00000FFF;
     if (param->step) printf("csrrw %%r%d, %%r%d, %s\n", rd, rs1, param->csr_table[imm].c_str());
+    evac = param->reg[rs1];
     if (rd != 0) param->reg[rd] = param->csr[imm];
-    param->csr[imm] = param->reg[rs1];
+    param->csr[imm] = evac;
     param->last_written_csr = imm;
     pc_inclement(param);
     return;
@@ -485,8 +486,9 @@ void exec_main(param_t* param) {
     set_i_type(param, &rd, &rs1, &imm);
     imm &= 0x00000FFF;
     if (param->step) printf("csrrs %%r%d, %%r%d, %s\n", rd, rs1, param->csr_table[imm].c_str());
+    evac = param->reg[rs1];
     if (rd != 0) param->reg[rd] = param->csr[imm];
-    param->csr[imm] |= param->reg[rs1];
+    param->csr[imm] |= evac;
     param->last_written_csr = imm;
     pc_inclement(param);
     return;
@@ -494,8 +496,9 @@ void exec_main(param_t* param) {
     set_i_type(param, &rd, &rs1, &imm);
     imm &= 0x00000FFF;
     if (param->step) printf("csrrc %%r%d, %%r%d, %s\n", rd, rs1, param->csr_table[imm].c_str());
+    evac = param->reg[rs1];
     if (rd != 0) param->reg[rd] = param->csr[imm];
-    param->csr[imm] &= ~(param->reg[rs1]);
+    param->csr[imm] &= ~evac;
     param->last_written_csr = imm;
     pc_inclement(param);
     return;
@@ -563,6 +566,10 @@ void exec_main(param_t* param) {
     return;
   case WFI:
     if (param->step) printf("wfi\n");
+    pc_inclement(param);
+    return;
+  case FENCE:
+    if (param->step) printf("fence\n");
     pc_inclement(param);
     return;
   default:
