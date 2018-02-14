@@ -1,8 +1,8 @@
 #include "decoder.hpp"
 
 inline void print_unknown_inst(param_t* param, int x, int i, unsigned inst) {
-  printf("error$%d: unknown %dth instruction of 0x%08X.\n", x, param->rbuf_begin + i, inst);
-  exit(EXIT_FAILURE);
+  // printf("warning$%d: unknown %dth instruction of 0x%08X.\n", x, param->rbuf_begin + i, inst);
+  (param->decoded)[i][0] = inst;
 }
 
 inline void decode_sb_type(param_t* param, int i, int inst) {
@@ -45,13 +45,6 @@ inline void decode_uj_type(param_t* param, int i, int inst) {
   (param->decoded)[i][2] = (inst & 0x80000000) >> 11 | (inst & 0xFF000) | (inst & 0x100000) >> 9 | (inst & 0x7FE00000) >> 20;
   //20th bit = sign
   if ((param->decoded)[i][2] & 0x100000) (param->decoded)[i][2] = (param->decoded)[i][2] | 0xFFE00000;
-}
-
-inline void check_rm(unsigned inst) {
-  if((inst & 0x7000) >> 12 != RM) {
-    printf("simulator does not correspond to RM except for 0b000.\n");
-    exit(EXIT_FAILURE);
-  }
 }
 
 void decode_all(param_t* param) {
@@ -235,19 +228,19 @@ void decode_all(param_t* param) {
         decode_r_type(param, i, inst);
         switch (inst >> 25) {
           case 0b0000000: //FADDS
-            check_rm(inst);
+            // check_rm(inst);
             (param->decoded)[i][0] = FADDS;
             break;
           case 0b0000100: //FSUBS
-            check_rm(inst);
+            // check_rm(inst);
             (param->decoded)[i][0] = FSUBS;
             break;
           case 0b0001000: //FMULS
-            check_rm(inst);
+            // check_rm(inst);
             (param->decoded)[i][0] = FMULS;
             break;
           case 0b0001100: //FDIVS
-            check_rm(inst);
+            // check_rm(inst);
             (param->decoded)[i][0] = FDIVS;
             break;
           case 0b1010000: //FEQS or FLTS or FLES?
@@ -265,17 +258,17 @@ void decode_all(param_t* param) {
             else print_unknown_inst(param, 1160, i, inst);
             break;
           case 0b1101000: //FCVTSW
-            check_rm(inst);
+            // check_rm(inst);
             if ((param->decoded)[i][3] == 0) (param->decoded)[i][0] = FCVTSW;
             else print_unknown_inst(param, 1170, i, inst);
             break;
           case 0b1100000: //FCVTWS
-            check_rm(inst);
+            // check_rm(inst);
             if ((param->decoded)[i][3] == 0) (param->decoded)[i][0] = FCVTWS;
             else print_unknown_inst(param, 1180, i, inst);
             break;
           case 0b0101100: //FSQRTS
-            check_rm(inst);
+            // check_rm(inst);
             if ((param->decoded)[i][3] == 0) (param->decoded)[i][0] = FSQRTS;
             else print_unknown_inst(param, 1190, i, inst);
             break;
@@ -285,6 +278,44 @@ void decode_all(param_t* param) {
             break;
           default:
             print_unknown_inst(param, 1299, i, inst);
+        }
+        break;
+      case 0b1110011: // system
+        decode_i_type(param, i, inst);
+        switch (inst & 0x7000) {
+        case 0x0000: //others
+          switch ((inst >> 20) & 0xfff) {
+            case 0x000: //SCALL
+            (param->decoded)[i][0] = SCALL;
+            break;
+            case 0x001: //SBREAK
+            (param->decoded)[i][0] = SBREAK;
+            break;
+            case 0x105: //WFI
+            (param->decoded)[i][0] = WFI;
+            break;
+          }
+          break;
+        case 0x1000: //CSRRW
+          (param->decoded)[i][0] = CSRRW;
+          break;
+        case 0x2000: //CSRRS
+          (param->decoded)[i][0] = CSRRS;
+          break;
+        case 0x3000: //CSRRC
+          (param->decoded)[i][0] = CSRRC;
+          break;
+        case 0x5000: //CSRRWI
+          (param->decoded)[i][0] = CSRRWI;
+          break;
+        case 0x6000: //CSRRSI
+          (param->decoded)[i][0] = CSRRSI;
+          break;
+        case 0x7000: //CSRRCI
+          (param->decoded)[i][0] = CSRRCI;
+          break;
+        default:
+          print_unknown_inst(param, 1349, i, inst);
         }
         break;
       case 0b0001011: // custom-0

@@ -24,8 +24,8 @@ void run_break(param_t* param);
 void run_wave(param_t* param);
 void run_step(param_t* param);
 void print_wave(int mode);
-void print_standard_reg(param_t* param);
 void print_call_time(param_t* param);
+void set_elf_data(param_t *param);
 
 void sigsegv_handler(int signo) {
   printf("\n\nerror: segmentation fault\n\n");
@@ -64,6 +64,11 @@ int main(int argc, char *argv[]) {
     else if (strbuf == "-f") {
       param->f_display = true;
     }
+    else if (strbuf == "-elf") {
+      param->elf_flag = true;
+      param->elf_seek = ELF_ADDR - ELF_OFFSET;
+      param->pc = ELF_ADDR;
+    }
     else if (strbuf == "-i") {
       ++i;
       if (i >= argc) { printf("error: specify an input file after option \"-i\".\n"); exit(EXIT_FAILURE); }
@@ -84,17 +89,20 @@ int main(int argc, char *argv[]) {
     }
     else {
       if (param->fp != NULL) { printf("error: unknown option of %s\n, use -help option to check options", strbuf.c_str()); exit(EXIT_FAILURE); }
-      if (strbuf.substr(strbuf.length() - 4, 4) != ".bin") {
+      if (strbuf.substr(strbuf.length() - 4, 4) != ".bin" && !param->elf_flag) {
         printf("error: specify a binary file \"*.bin\".\n");
         exit(EXIT_FAILURE);
       }
       param->fp = fopen(argv[i], "rb");
       if (param->fp == NULL) { perror("fopen error"); exit(EXIT_FAILURE); }
+      if (param->elf_flag) {
+        set_elf_data(param);
+      }
     }
   }
   if (param->fp == NULL) { printf("error: specify a file\n"); exit(EXIT_FAILURE); }
-  //0バイト目から読んで初期化
-  exec_jmp_fread(param, 0);
+  //pc初期値から読んで初期化
+  exec_jmp_fread(param, param->pc);
 
   if (param->step) run_step(param);
   else {
@@ -109,6 +117,31 @@ int main(int argc, char *argv[]) {
 
   fclose(param->fp);
   return 0;
+}
+
+void set_elf_data(param_t *param) {
+  // section table
+  vector<vector<unsigned>> section_table = {
+    { 0x80000000, 0x001000, 0x00948c },
+    { 0x8000948c, 0x00a48c, 0x0008b0 },
+    { 0x80009d3c, 0x00ad3c, 0x0000b0 },
+    { 0x8000a000, 0x00b000, 0x000010 },
+    { 0x8000b000, 0x00c000, 0x000051 },
+    { 0x8000b054, 0x00c054, 0x000008 },
+    { 0x8000b05c, 0x00c05c, 0x000008 },
+    { 0x8000c000, 0x00c064, 0x00903c },
+    { 0x80400000, 0x400000, 0x1a3c7c }
+  };
+  Loop(i, section_table.size()) {
+    if (fseek(param->fp, section_table[i][1], SEEK_SET) != 0) { perror("fseek error"); exit_message(param); }
+    unsigned rbuf[0x80000];
+    unsigned rsize = fread(rbuf, sizeof(unsigned), section_table[i][2] >> 2, param->fp);
+    if (rsize < 0) { perror("fread error"); exit_message(param); }
+    Loop(j, rsize) {
+      param->mem[section_table[i][0] + j * 4] = rbuf[j];
+    }
+  }
+  return;
 }
 
 inline void preprocess_of_run(param_t* param) {
@@ -210,7 +243,7 @@ void run_step(param_t* param){
   param->step = true;
   while(1) {
     preprocess_of_run(param);
-	printf("\nPC = %08X, cnt = %lld : \n", param->pc, param->cnt + 1);
+	printf("\nPC = %08X, cnt = %lld, inst = %08X : \n", param->pc, param->cnt + 1, param->rbuf[param->rbuf_p]);
     if (param->wave) {
       update_wave1(param);
     }
@@ -243,13 +276,16 @@ void run_step(param_t* param){
           break;
         }
         else {
-          int a;
-          try { a = stoi(s.c_str(), NULL, 0); }
+          unsigned a;
+          try { a = stoll(s.c_str(), NULL, 0); }
           catch (invalid_argument err) {
-            printf("error: invalid argument, please redo");
+            if(param->csr_rtable.find(s) == param->csr_rtable.end()) {
+              printf("error: invalid argument, please redo");
+            }
+            else printf("%s: %08X", s.c_str(), param->csr[param->csr_rtable[s]]);
             continue;
           }
-          printf("M[%d]:%08X", a, param->mem[a]);
+          printf("M[%x]: %08X", a, param->mem[a]);
         }
       }
       else {
@@ -368,6 +404,12 @@ void print_call_time(param_t* param) {
     { param->call_time[FCVTWS], "FCVTWS" },
     { param->call_time[FSQRTS], "FSQRTS" },
     { param->call_time[FSGNJXS], "FSGNJXS" },
+    { param->call_time[CSRRW], "CSRRW" },
+    { param->call_time[CSRRS], "CSRRS" },
+    { param->call_time[CSRRC], "CSRRC" },
+    { param->call_time[CSRRWI], "CSRRWI" },
+    { param->call_time[CSRRSI], "CSRRSI" },
+    { param->call_time[CSRRCI], "CSRRCI" },
     { param->call_time[ROT], "ROT" },
     { param->call_time[IN], "IN" },
     { param->call_time[OUT], "OUT" }

@@ -54,7 +54,7 @@ unordered_map<string, struct i_factors> s_type = {
   {    "sh", {0b001, 0b0100011, STD} },
   {    "sw", {0b010, 0b0100011, STD} },
   {   "fsw", {0b010, 0b0100111, FS} },
-  {   "out", {0b001, 0b0000001, OUT} }
+  {   "out", {0b000, 0b0101011, OUT} }
 };
 
 unordered_map<string, struct i_factors> sb_type = {

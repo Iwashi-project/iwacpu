@@ -1,0 +1,18 @@
+riscv32-unknown-linux-gnu-objdump -d <binary file>
+riscv32-unknown-linux-gnu-gcc ~
+
+
+
+
+ディレクトリ
+
+ブートローダー
+~/iwashi/riscv-tools/riscv-pk/build32/bbl
+
+~/iwashi/riscv-qemu/target/riscv/translate.c
+~/iwashi/riscv-qemu/target/riscv/instmap.h
+
+
+
+readelf -h <filename>
+readelf -S <filename>

@@ -18,6 +18,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +27,9 @@
 using namespace std;
 
 #define RBUFSIZE 65536
-#define MEM_LIMIT 675000
+#define ELF_ADDR 0x80000000
+#define ELF_OFFSET 0x1000
+#define ELF_TEXT_RBUF_SIZE 0x
 
 #define Loop(i, n) for(int i = 0; i < (int)n; i++)
 #define Loop1(i, n) for(int i = 1; i <= (int)n; i++)
@@ -63,11 +66,17 @@ struct param_t {
   bool contest;
   int reg[32];
   float freg[32];
-  unsigned mem[MEM_LIMIT];
+  unsigned csr[4096];
+  unordered_map<unsigned, unsigned> mem;
   unsigned long long cnt;
   unsigned long long breakcnt;
-  unsigned call_time[128];
+  unsigned call_time[256];
   unsigned max_mem_no;
+  unsigned elf_flag;
+  unsigned elf_seek;
+  unsigned last_written_csr;
+  map<unsigned, string> csr_table;
+  map<string, unsigned> csr_rtable;
 };
 
 enum inst_t {
@@ -78,7 +87,10 @@ enum inst_t {
   ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI,
   ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND,
   MUL, DIV, FLW, FSW, FADDS, FSUBS, FMULS, FDIVS,
-  FEQS, FLTS, FLES, FMVSX, FMVXS, FCVTSW, FCVTWS, FSQRTS, FSGNJXS, ROT, IN, OUT
+  FEQS, FLTS, FLES, FMVSX, FMVXS, FCVTSW, FCVTWS, FSQRTS, FSGNJXS,
+  CSRRW, CSRRS, CSRRC, CSRRWI, CSRRSI, CSRRCI,
+  SCALL, SBREAK, WFI,
+  ROT, IN, OUT
 };
 
 void init_param(param_t* param);
