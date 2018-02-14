@@ -475,7 +475,7 @@ void exec_main(param_t* param) {
   case CSRRW:
     set_i_type(param, &rd, &rs1, &imm);
     imm &= 0x00000FFF;
-    if (param->step) printf("csrrw %%r%d, %%r%d, %s\n", rd, rs1, param->csr_table[imm].c_str());
+    /* if (param->step) */ printf("\nPC = %08X, inst = %08X : \n", param->pc, param->rbuf[param->rbuf_p]); printf("csrrw %%r%d, %%r%d, %s\n", rd, rs1, param->csr_table[imm].c_str());
     evac = param->reg[rs1];
     if (rd != 0) param->reg[rd] = param->csr[imm];
     param->csr[imm] = evac;
@@ -485,7 +485,7 @@ void exec_main(param_t* param) {
   case CSRRS:
     set_i_type(param, &rd, &rs1, &imm);
     imm &= 0x00000FFF;
-    if (param->step) printf("csrrs %%r%d, %%r%d, %s\n", rd, rs1, param->csr_table[imm].c_str());
+    /* if (param->step) */ printf("\nPC = %08X, inst = %08X : \n", param->pc, param->rbuf[param->rbuf_p]); printf("csrrs %%r%d, %%r%d, %s\n", rd, rs1, param->csr_table[imm].c_str());
     evac = param->reg[rs1];
     if (rd != 0) param->reg[rd] = param->csr[imm];
     param->csr[imm] |= evac;
@@ -495,7 +495,7 @@ void exec_main(param_t* param) {
   case CSRRC:
     set_i_type(param, &rd, &rs1, &imm);
     imm &= 0x00000FFF;
-    if (param->step) printf("csrrc %%r%d, %%r%d, %s\n", rd, rs1, param->csr_table[imm].c_str());
+    /* if (param->step) */ printf("\nPC = %08X, inst = %08X : \n", param->pc, param->rbuf[param->rbuf_p]); printf("csrrc %%r%d, %%r%d, %s\n", rd, rs1, param->csr_table[imm].c_str());
     evac = param->reg[rs1];
     if (rd != 0) param->reg[rd] = param->csr[imm];
     param->csr[imm] &= ~evac;
@@ -505,7 +505,7 @@ void exec_main(param_t* param) {
   case CSRRWI:
     set_i_type(param, &rd, &rs1, &imm);
     imm &= 0x00000FFF;
-    if (param->step) printf("csrrwi %%r%d, %s, $0x%x\n", rd, param->csr_table[imm].c_str(), rs1);
+    /* if (param->step) */ printf("\nPC = %08X, inst = %08X : \n", param->pc, param->rbuf[param->rbuf_p]); printf("csrrwi %%r%d, %s, $0x%x\n", rd, param->csr_table[imm].c_str(), rs1);
     if (rd != 0) param->reg[rd] = param->csr[imm];
     param->csr[imm] = rs1;
     pc_inclement(param);
@@ -513,7 +513,7 @@ void exec_main(param_t* param) {
   case CSRRSI:
     set_i_type(param, &rd, &rs1, &imm);
     imm &= 0x00000FFF;
-    if (param->step) printf("csrrsi %%r%d, %s, $0x%x\n", rd, param->csr_table[imm].c_str(), rs1);
+    /* if (param->step) */ printf("\nPC = %08X, inst = %08X : \n", param->pc, param->rbuf[param->rbuf_p]); printf("csrrsi %%r%d, %s, $0x%x\n", rd, param->csr_table[imm].c_str(), rs1);
     if (rd != 0) param->reg[rd] = param->csr[imm];
     param->csr[imm] |= rs1;
     pc_inclement(param);
@@ -521,7 +521,7 @@ void exec_main(param_t* param) {
   case CSRRCI:
     set_i_type(param, &rd, &rs1, &imm);
     imm &= 0x00000FFF;
-    if (param->step) printf("csrrci %%r%d, %s, $0x%x\n", rd, param->csr_table[imm].c_str(), rs1);
+    /* if (param->step) */ printf("\nPC = %08X, inst = %08X : \n", param->pc, param->rbuf[param->rbuf_p]); printf("csrrci %%r%d, %s, $0x%x\n", rd, param->csr_table[imm].c_str(), rs1);
     if (rd != 0) param->reg[rd] = param->csr[imm];
     param->csr[imm] &= ~rs1;
     pc_inclement(param);
