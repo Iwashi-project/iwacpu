@@ -39,18 +39,11 @@ module core_alu (
   input I_SH,
   input I_SW,
 
-  input I_FLW,
-  input I_FSW,
-  input I_FMVSX,
-  input I_FSGNJXS,
   input I_ROT,
 
   input [31:0]  RS1,
   input [31:0]  RS2,
   input [31:0]  IMM,
-
-  input [31:0]  FRS1,
-  input [31:0]  FRS2,
 
   output reg [31:0] RESULT
 
@@ -62,7 +55,7 @@ module core_alu (
     if(!RST_N) begin
       RESULT <= 0;
     end else begin
-      RESULT <= (I_ADDI | I_LB | I_LH | I_LW | I_LBU | I_LHU | I_SB | I_SH | I_SW | I_FLW | I_FSW) ? RS1 + IMM:
+      RESULT <= (I_ADDI | I_LB | I_LH | I_LW | I_LBU | I_LHU | I_SB | I_SH | I_SW) ? RS1 + IMM:
         (I_ADD) ? RS1 + RS2: 
         I_SUB ? RS1 - RS2:
         (I_SLTI) ? ($signed(RS1) < $signed(IMM)):
@@ -87,8 +80,6 @@ module core_alu (
         I_BGEU ? !(RS1 < RS2):
         I_BLT ? ($signed(RS1) < $signed(RS2)):
         I_BLTU ? (RS1 < RS2):
-        I_FMVSX ? RS1 :
-        I_FSGNJXS ? {FRS1[31] ^ FRS2[31], FRS1[30:0]} :
         I_ROT ? {RS1[7:0], RS1[15:8], RS1[23:16], RS1[31:24]} :
         32'd0;
     end

@@ -9,10 +9,6 @@ module core_decode
   output wire [4:0] RS1_NUM,
   output wire [4:0] RS2_NUM,
 
-  output wire [4:0] FRD_NUM,
-  output wire [4:0] FRS1_NUM,
-  output wire [4:0] FRS2_NUM,
-
   output reg [31:0] IMM,
 
   output reg I_ADDI,
@@ -56,22 +52,6 @@ module core_decode
   output reg I_AUIPC,
   output reg I_LUI,
 
-  output reg I_FLW,
-  output reg I_FSW,
-  output reg I_FADDS,
-  output reg I_FSUBS,
-  output reg I_FMULS,
-  output reg I_FDIVS,
-  output reg I_FEQS,
-  output reg I_FLTS,
-  output reg I_FLES,
-
-  output reg I_FMVSX,
-  output reg I_FCVTSW,
-  output reg I_FCVTWS,
-  output reg I_FSQRTS,
-  output reg I_FSGNJXS,
-
   output reg I_IN,
   output reg I_OUT,
 
@@ -88,7 +68,7 @@ module core_decode
     if(!RST_N) begin
       IMM <= 0;
     end else begin
-      IMM <= (((INST[6:0] == 7'b1100111) || (INST[6:0] == 7'b0000011) || (INST[6:0] == 7'b0010011) || (INST[6:0] == 7'b0000111))) ? {{21{INST[31]}}, INST[30:20]} :
+      IMM <= (((INST[6:0] == 7'b1100111) || (INST[6:0] == 7'b0101011) || (INST[6:0] == 7'b0000011) || (INST[6:0] == 7'b0010011) || (INST[6:0] == 7'b0000111))) ? {{21{INST[31]}}, INST[30:20]} :
              ((INST[6:0] == 7'b0100011) || (INST[6:0] == 7'b0100111)) ? {{21{INST[31]}}, INST[30:25], INST[11:7]} :
              ((INST[6:0] == 7'b1100011)) ? {{20{INST[31]}}, INST[7], INST[30:25], INST[11:8], 1'b0} :
              ((INST[4:0] == 5'b10111)) ? {INST[31:12], 12'b0000_0000_0000} :
@@ -100,10 +80,6 @@ module core_decode
   assign RD_NUM = ( (INST[6:0] == 7'b0001011) | ( (INST[6:2] == 5'b10100) && ( (func7 == 7'b1010000) | (func7 == 7'b1100000) ) ) | (INST[6:2] == 5'b01100) | ((INST[6:0] == 7'b1100111) || (INST[6:0] == 7'b0000011) ||(INST[6:0] == 7'b0010011)) | (INST[4:0] == 5'b10111) | (INST[6:0] == 7'b1101111) | (INST[6:0] == 7'b0000001)) ? INST[11:7] : 5'd0;
   assign RS1_NUM = ( (INST[6:0] == 7'b0000001) | (INST[6:0] == 7'b0001011) | ( (INST[6:2] == 5'b10100) && ((func7 == 7'b1111000) | (func7 == 7'b1101000)) ) | (INST[6:2] == 5'b01100) | ((INST[6:0] == 7'b1100111) || (INST[6:0] == 7'b0000011) ||  (INST[6:0] == 7'b0000111) ||(INST[6:0] == 7'b0010011)) | (INST[6:0] == 7'b0100011) | (INST[6:0] == 7'b0100111) | (INST[6:0] == 7'b1100011)) ? INST[19:15] : 5'd0;
   assign RS2_NUM = ((INST[6:2] == 5'b01100) | (INST[6:0] == 7'b0100011) | (INST[6:0] == 7'b1100011) ) ? INST[24:20] : 5'd0;
-
-  assign FRD_NUM = (INST[6:0] == 7'b0000111) | ( (INST[6:2] == 5'b10100) && ( (func7 == 7'b0101100) | (func7 == 7'b1101000) | (func7 == 7'b1111000) | (func7 == 7'b0000000) | (func7 == 7'b0000100) | (func7 == 7'b0001000) | (func7 == 7'b0001100) | (func7 == 7'b0010000) ) ) ? INST[11:7] : 5'd0;
-  assign FRS1_NUM = ( (INST[6:2] == 5'b10100) && ( (func7 == 7'b0101100) | (func7 == 7'b1100000) | (func7 == 7'b1010000) | (func7 == 7'b0000000) | (func7 == 7'b0000100) | (func7 == 7'b0001000) | (func7 == 7'b0001100) | (func7 == 7'b0010000) ) ) ? INST[19:15] : 5'd0;
-  assign FRS2_NUM = (INST[6:0] == 7'b0100111) | ( (INST[6:2] == 5'b10100) && ( (func7 == 7'b1010000) | (func7 == 7'b0000000) | (func7 == 7'b0000100) | (func7 == 7'b0001000) | (func7 == 7'b0001100) | (func7 == 7'b0010000) ) ) ? INST[24:20] : 5'd0;
 
   always @(posedge CLK) begin
     if(!RST_N) begin
@@ -148,20 +124,6 @@ module core_decode
       I_AUIPC <= 1'b0;
       I_LUI <= 1'b0;
 
-      I_FLW <= 1'b0;
-      I_FSW <= 1'b0;
-      I_FADDS <= 1'b0;
-      I_FSUBS <= 1'b0;
-      I_FMULS <= 1'b0;
-      I_FDIVS <= 1'b0;
-      I_FEQS <= 1'b0;
-      I_FLTS <= 1'b0;
-      I_FLES <= 1'b0;
-      I_FMVSX <= 1'b0;
-      I_FCVTSW <= 1'b0;
-      I_FCVTWS <= 1'b0;
-      I_FSQRTS <= 1'b0;
-      I_FSGNJXS <= 1'b0;
       I_ROT <= 1'b0;
       I_IN <= 1'b0;
       I_OUT <= 1'b0;
@@ -208,36 +170,10 @@ module core_decode
       I_JAL <= (INST[6:0] == 7'b1101111);
       I_JALR <= (INST[6:0] == 7'b1100111);
 
-      I_FLW <= (INST[6:0] == 7'b0000111) && (func3 == 3'b010);
-      I_FSW <= (INST[6:0] == 7'b0100111) && (func3 == 3'b010);
-
-      // frs1,frs2,frd
-      I_FADDS <= (INST[6:2] == 5'b10100) && (func7 == 7'b0000000);
-      I_FSUBS <= (INST[6:2] == 5'b10100) && (func7 == 7'b0000100);
-      I_FMULS <= (INST[6:2] == 5'b10100) && (func7 == 7'b0001000);
-      I_FDIVS <= (INST[6:2] == 5'b10100) && (func7 == 7'b0001100);
-      I_FSGNJXS <= (INST[6:2] == 5'b10100) && (func7 == 7'b0010000);
-
-      // frs1,frs2,rd
-      I_FEQS <= (INST[6:2] == 5'b10100) && (func7 == 7'b1010000) && (func3 == 3'b010);
-      I_FLTS <= (INST[6:2] == 5'b10100) && (func7 == 7'b1010000) && (func3 == 3'b001);
-      I_FLES <= (INST[6:2] == 5'b10100) && (func7 == 7'b1010000) && (func3 == 3'b000);
-
-      // rs1,frd
-      I_FMVSX <= (INST[6:2] == 5'b10100) && (func7 == 7'b1111000);
-      // i to f rs1, frd
-      I_FCVTSW <= (INST[6:2] == 5'b10100) && (func7 == 7'b1101000);
-
-      // f to i frs1, rd
-      I_FCVTWS <= (INST[6:2] == 5'b10100) && (func7 == 7'b1100000);
-
-      // frs1, frd
-      I_FSQRTS <= (INST[6:2] == 5'b10100) && (func7 == 7'b0101100);
-
       I_ROT <= (INST[6:0] == 7'b0001011);
 
-      I_IN <= (INST[6:0] == 7'b0000001) && (func3 == 3'b000);
-      I_OUT <= (INST[6:0] == 7'b0000001) && (func3 == 3'b001);
+      I_IN <= (INST[6:0] == 7'b0101011) && (func3 == 3'b001);
+      I_OUT <= (INST[6:0] == 7'b0101011) && (func3 == 3'b000);
     end
   end
 endmodule
