@@ -34,4 +34,4 @@
 #define HOGEHOGE 0x15000
 
 #define PROC_BASE(X) (0x6000 + (X)*0x5000)
-#define PROC_STACK_TOP(X) (0xa000 - 4 + (X)*0x5000)
+#define PROC_STACK_TOP (0x4000 - 4)

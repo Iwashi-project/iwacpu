@@ -12,6 +12,7 @@ void init_proc(int id) {
 
     for(int i=0; i<32; i++)
         p->regs[i] = 0;
+    p->regs[2] = PROC_STACK_TOP; // x2 is sp
 
     for(int i=0; i<32; i++)
         p->page_maps[i] = HOGEHOGE;
