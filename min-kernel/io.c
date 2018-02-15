@@ -27,7 +27,8 @@ void print_hex(int x) {
 
     char s[100];
     int i;
-    for(i=99; x; x >> 4, i--) {
+    s[99] = 0;
+    for(i=98; x; x >> 4, i--) {
         int y = x & 0xF; 
         s[i] = (y < 10) ? ('0' + y) : ('A' - 10 + y);
     }
