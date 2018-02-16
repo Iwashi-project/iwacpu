@@ -15,28 +15,28 @@ module core_top_top
     output MEM_WE,
 
     // In/Out
-    output reg [3:0] ARADDR,
+    output wire [3:0] ARADDR,
     input wire ARREADY,
-    output reg ARVALID,
+    output wire ARVALID,
 
-    output reg [3:0] AWADDR,
+    output wire [3:0] AWADDR,
     input wire AWREADY,
-    output reg AWVALID,
+    output wire AWVALID,
 
-    output reg BREADY,
+    output wire BREADY,
     input wire [1:0] BRESP,
     input wire BVALID,
 
     input wire [31:0] RDATA,
-    output reg RREADY,
+    output wire RREADY,
     input wire [1:0] RRESP,
     input wire RVALID,
 
-    output reg [31:0] WDATA,
+    output wire [31:0] WDATA,
     input wire WREADY,
-    output reg WVALID,
+    output wire WVALID,
 
-    output reg [3:0] WSTRB
+    output wire [3:0] WSTRB
 
   );
 
@@ -57,11 +57,11 @@ core_top u_core_top
     .ARREADY (ARREADY),
     .ARVALID (ARVALID),
     
-    .AWADDR (ARADDR),
+    .AWADDR (AWADDR),
     .AWREADY (AWREADY),
     .AWVALID (AWVALID),
 
-    .BREADY (BREAD),
+    .BREADY (BREADY),
     .BRESP (BRESP),
     .BVALID (BVALID),
 

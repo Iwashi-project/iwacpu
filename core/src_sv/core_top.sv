@@ -57,12 +57,12 @@ module core_top
  (* mark_debug = "true" *) reg [7:0] rdata;
 
   // Paging
- (* mark_debug = "true" *) wire [4:0] pd_num, ps1_num, ps2_num;
+ (* mark_debug = "true" *) wire [4:0] pd_num, ps1_num;
  (* mark_debug = "true" *) wire [31:0] ps1;
 
  // OS opecodes
  (* mark_debug = "true" *) wire i_mvptg, i_mvgtp, i_iret, i_mvgto, i_mvnpctg, i_mvgtnpc;
- (* mark_debug = "true" *) wire [31:0] osreg;
+ (* mark_debug = "true" *) reg [31:0] osreg;
 
  // MMU on/off
  (* mark_debug = "true" *) reg mmu;
@@ -105,7 +105,6 @@ module core_top
     if(!RST_N) begin
       cpu_state <= IDLE;
       total_cnt <= 0;
-      mmu <= 0;
     end else begin
       if (stole) begin
         cpu_state <= cpu_state;
@@ -118,7 +117,7 @@ module core_top
           FETCH:
           begin
             cpu_state <= DECODE;
-            total_cnt <= (mmu) ? total_cnt + 1 : 0;
+            total_cnt <= (mmu) ? ( (total_cnt == time_period) ? 0 : total_cnt + 1) : 0;
           end
           DECODE:
           begin
@@ -329,7 +328,7 @@ module core_top
               s_write:
               begin
                   AWADDR  <= 4'b0100;
-                  WDATA   <= imm;
+                  WDATA   <= rs1;
                   AWVALID <= 1;
                   WVALID <= 1;
                   write_status <= s_write2;
@@ -382,31 +381,15 @@ module core_top
     pc_before <= pc;
   end
   
-  // メモリアクセスの前に実行と切り分ける
-
- (* mark_debug = "true" *) wire [4:0] wr_addr;
- (* mark_debug = "true" *) wire  wr_we;
- (* mark_debug = "true" *) wire [31:0] wr_data;
-
- (* mark_debug = "true" *) wire [31:0] pwr_data;
- (* mark_debug = "true" *) wire [4:0] pwr_addr;
-
- (* mark_debug = "true" *) wire wr_pc_we;
- (* mark_debug = "true" *) wire [31:0] wr_pc;
-
  // NPC
  (* mark_debug = "true" *) reg[31:0] npc;
 
   // 4. メモリアクセス
 
-
-  // それぞれの段階ごとのアサインをする
-  // 1. 命令フェッチ Instruction Fetch
-  
   // MMU
-  assign I_MEM_ADDR = (pc >> 2);
-  assign MEM_ADDR = alu_result;
-
+  wire[31:0] shifted_pc = pc >> 2;
+  assign I_MEM_ADDR = (mmu) ? preg[shifted_pc[31:12]] + shifted_pc[11:0] : shifted_pc;
+  assign MEM_ADDR = (mmu) ? preg[alu_result[31:12]] + alu_result[11:0] : alu_result;
 
   assign MEM_DATA = (i_sb) ? {4{rs2[7:0]}}:
                    (i_sh) ? {2{rs2[15:0]}}:
@@ -414,75 +397,110 @@ module core_top
                    32'd0;
   assign MEM_WE = (i_sb | i_sh | i_sw) && (cpu_state == MEMORY && !stole);
  
-  // 5. 書き戻し
-  
 
+  // 5. 書き戻し
   // レジスタ
 
-  assign wr_pc_we = (cpu_state == MEMORY && !stole);
-  assign wr_pc = (((i_beq | i_bne | i_blt | i_bge | i_bltu | i_bgeu) & (alu_result == 32'd1)) | i_jal) ? pc_add_imm:
-                 (i_jalr) ? pc_jalr:
-                 (i_iret) ? npc:
-                 (total_cnt == time_period) ? osreg:
-                 pc_add_4;
-  assign wr_we = (cpu_state == WRITEBACK && !stole);
-  assign wr_data = (i_lui) ? (imm << 12):
+  // Paging registers
+ (* mark_debug = "true" *) wire [31:0][31:0] preg;
+ (* mark_debug = "true" *) wire [31:0] pwr_data;
+ (* mark_debug = "true" *) wire [4:0] pwr_addr;
+
+  assign pwr_addr = pd_num;
+  assign pwr_data = rs1;
+
+  assign pr_we = (i_mvgtp) && (cpu_state == WRITEBACK && !stole);
+
+
+  // General registers
+ (* mark_debug = "true" *) wire [4:0] wr_addr;
+ (* mark_debug = "true" *) wire [31:0] wr_data;
+
+ (* mark_debug = "true" *) wire  wr_we;
+
+  assign wr_addr = rd_num;
+  assign wr_data = (i_lui) ? imm:
                    (i_lw | i_lh | i_lb | i_lbu | i_lhu) ? MEM_IN:
                    (i_auipc) ? pc_add_imm:
                    (i_jal | i_jalr) ? pc_add_4:
                    (i_mvptg) ? ps1:
                    (i_mvnpctg) ? npc:
                     alu_result;
-  assign wr_addr = rd_num;
 
-  assign pwr_data = (i_mvgtp) ? rs1 : 32'b0;
-  assign pwr_addr = pd_num;
+  assign wr_we = ( (i_lui | i_lw | i_lh | i_lb | i_lbu | i_lhu | i_auipc | i_jal | i_jalr | i_mvptg | i_mvnpctg) |
+                   (i_addi | i_slti | i_sltiu | i_xori | i_ori | i_andi | i_slli | i_srli | i_srai | i_add | i_sub | i_sll | i_slt | i_sltu | i_xor | i_srl | i_sra | i_or | i_and) )
+                 & (cpu_state == WRITEBACK && !stole);
 
   assign ine = (i_in & (cpu_state == WRITEBACK) & !stole);
 
-  // Special registers
-  assign osreg = ( wr_we & i_mvgto ) ? rs1 : osreg;
- (* mark_debug = "true" *) wire [31:0][31:0] preg;
+  // Program counters
+ (* mark_debug = "true" *) wire wr_pc_we;
+ (* mark_debug = "true" *) wire [31:0] wr_pc;
 
-  // iret
-  // interrupt
-  always @(posedge CLK) begin
-    if (total_cnt == time_period) begin
-      npc <= pc_before + 4;
-      mmu <= 0;
-      total_cnt <= 0;
-    end
-    mmu <= (wr_we & i_iret) ? 1 : mmu;
-  end
+  assign wr_pc_we = (cpu_state == MEMORY && !stole);
+  assign wr_pc = ( ( (i_beq | i_bne | i_blt | i_bge | i_bltu | i_bgeu) & (alu_result == 32'd1)) | i_jal) ? pc_add_imm:
+                 (i_jalr) ? pc_jalr:
+                 (i_iret) ? npc:
+                 (total_cnt == time_period) ? osreg:
+                 pc_add_4;
+
 
   core_reg u_core_reg
   (
     .RST_N (RST_N),
     .CLK (CLK),
 
+    // paging register
     .PREG (preg),
-
     .PWADDR (pwr_addr),
     .PWDATA (pwr_data),
 
+    // paging register write enable
+    .PWE (pr_we),
+
+    // paging registers
+    .PS1ADDR (ps1_num),
+    .PS1 (ps1),
+
+
+    // general register
     .WADDR (wr_addr),
-
-    .WE (wr_we),
     .WDATA (wr_data),
-    .INE (ine),
-    .INDATA (rdata),
 
+    // general registers write enable
+    .WE (wr_we),
+
+    // in read data
+    .INDATA (rdata),
+    // in write enable
+    .INE (ine),
+
+    // general registers
     .RS1ADDR (rs1_num),
     .RS1 (rs1),
     .RS2ADDR (rs2_num),
     .RS2 (rs2),
 
-    .PS1ADDR (ps1_num),
-    .PS1 (ps1),
 
+    // program counter
     .PC_WE (wr_pc_we),
     .PC_WDATA (wr_pc),
     .PC (pc)
   );
+
+  // Special registers
+  always @(posedge CLK) begin
+    if(!RST_N) begin
+      mmu <= 0;
+      osreg <= 0;
+      npc <= 0;
+    end
+    if (total_cnt == time_period) begin
+      npc <= pc_before + 4;
+      mmu <= 0;
+    end
+    osreg <= ((cpu_state == WRITEBACK && !stole) & i_mvgto ) ? rs1 : osreg;
+    mmu <= ((cpu_state == WRITEBACK && !stole) & i_iret) ? 1 : mmu;
+  end
 
 endmodule

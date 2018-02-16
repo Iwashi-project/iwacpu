@@ -77,21 +77,26 @@ module core_decode
     if(!RST_N) begin
       IMM <= 0;
     end else begin
-      IMM <= (((INST[6:0] == 7'b1100111) || (INST[6:0] == 7'b0101011) || (INST[6:0] == 7'b0000011) || (INST[6:0] == 7'b0010011) || (INST[6:0] == 7'b0000111))) ? {{21{INST[31]}}, INST[30:20]} :
-             ((INST[6:0] == 7'b0100011) || (INST[6:0] == 7'b0100111)) ? {{21{INST[31]}}, INST[30:25], INST[11:7]} :
+             // I type JALR, 
+      IMM <= ((INST[6:0] == 7'b1100111) || (INST[6:0] == 7'b0000011) || (INST[6:0] == 7'b0010011)) ? {{21{INST[31]}}, INST[30:20]} :
+             // S type sb sh sw, 
+             ((INST[6:0] == 7'b0100011)) ? {{21{INST[31]}}, INST[30:25], INST[11:7]} :
+             // B type, beq bne blt bge bltu bgeu
              ((INST[6:0] == 7'b1100011)) ? {{20{INST[31]}}, INST[7], INST[30:25], INST[11:8], 1'b0} :
+             // U type, LUI and AUIPC
              ((INST[4:0] == 5'b10111)) ? {INST[31:12], 12'b0000_0000_0000} :
+             // JAL
              ((INST[6:0] == 7'b1101111)) ? {{12{INST[31]}}, INST[19:12], INST[20], INST[30:21], 1'b0} :
              32'd0;
     end
   end
 
-  assign RD_NUM = ( ( (INST[6:0] == 7'b1011011) && (func3 == 3'b010) && (func7 == 7'b0000000)) | ( (INST[6:0] == 7'b1011011) && (func3 == 3'b000) && (func7 == 7'b0000000)) | (INST[6:0] == 7'b0001011) | ( (INST[6:2] == 5'b10100) && ( (func7 == 7'b1010000) | (func7 == 7'b1100000) ) ) | (INST[6:2] == 5'b01100) | ((INST[6:0] == 7'b1100111) || (INST[6:0] == 7'b0000011) ||(INST[6:0] == 7'b0010011)) | (INST[4:0] == 5'b10111) | (INST[6:0] == 7'b1101111) | (INST[6:0] == 7'b0000001)) ? INST[11:7] : 5'd0;
-  assign RS1_NUM = ( ( (INST[6:0] == 7'b1011011) && (func3 == 3'b010) && (func7 == 7'b0100000)) | ( (INST[6:0] == 7'b1011011) && (func3 == 3'b001) && (func7 == 7'b0000000)) | ( (INST[6:0] == 7'b1011011) && (func3 == 3'b000) && (func7 == 7'b0100000)) | (INST[6:0] == 7'b0000001) | (INST[6:0] == 7'b0001011) | ( (INST[6:2] == 5'b10100) && ((func7 == 7'b1111000) | (func7 == 7'b1101000)) ) | (INST[6:2] == 5'b01100) | ((INST[6:0] == 7'b1100111) || (INST[6:0] == 7'b0000011) ||  (INST[6:0] == 7'b0000111) ||(INST[6:0] == 7'b0010011)) | (INST[6:0] == 7'b0100011) | (INST[6:0] == 7'b0100111) | (INST[6:0] == 7'b1100011)) ? INST[19:15] : 5'd0;
-  assign RS2_NUM = ((INST[6:2] == 5'b01100) | (INST[6:0] == 7'b0100011) | (INST[6:0] == 7'b1100011) ) ? INST[24:20] : 5'd0;
+  assign RD_NUM =  INST[11:7];
+  assign RS1_NUM = INST[19:15];
+  assign RS2_NUM = INST[24:20];
 
-  assign PD_NUM = ( (INST[6:0] == 7'b1011011) && (func3 == 3'b000) && (func7 == 7'b0100000)) ? INST[11:7] : 5'd0;
-  assign PS1_NUM = ( (INST[6:0] == 7'b1011011) && (func3 == 3'b000) && (func7 == 7'b0000000)) ? INST[19:15] : 5'd0;
+  assign PD_NUM = INST[11:7];
+  assign PS1_NUM = INST[19:15];
 
 
   always @(posedge CLK) begin

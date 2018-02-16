@@ -5,24 +5,28 @@ module core_reg
    input CLK,
 
    output reg [31:0][31:0] PREG ,
-
    input [4:0] PWADDR,
    input [31:0] PWDATA,
 
+   input PWE,
+
+   input [4:0] PS1ADDR,
+   output reg [31:0] PS1,
+
+
    input [4:0] WADDR,
+   input [31:0] WDATA,
 
    input  WE,
-   input [31:0] WDATA,
-   input  INE,
+
    input [7:0] INDATA,
+   input  INE,
 
    input [4:0] RS1ADDR,
    output reg [31:0] RS1,
    input [4:0] RS2ADDR,
    output reg [31:0] RS2,
 
-   input [4:0] PS1ADDR,
-   output reg [31:0] PS1,
 
    input PC_WE,
    input [31:0] PC_WDATA,
@@ -31,6 +35,7 @@ module core_reg
 
  (* mark_debug = "true" *)   reg [31:0] reg1, reg2, reg3, reg4, reg5, reg6, reg7, reg8, reg9, reg10, reg11, reg12, reg13, reg14, reg15, reg16, reg17, reg18, reg19, reg20, reg21, reg22, reg23, reg24, reg25, reg26, reg27, reg28, reg29, reg30, reg31;
    reg _WE;
+   reg _PWE;
    reg _INE;
 
    // 整数レジスタ write
@@ -255,38 +260,39 @@ module core_reg
 				PREG[30] <= 0;
 				PREG[31] <= 0;
       end else begin
-        if(_WE && (PWADDR == 5'd0)) PREG[0] <= PWDATA;
-        if(_WE && (PWADDR == 5'd1)) PREG[1] <= PWDATA;
-        if(_WE && (PWADDR == 5'd2)) PREG[2] <= PWDATA;
-        if(_WE && (PWADDR == 5'd3)) PREG[3] <= PWDATA;
-        if(_WE && (PWADDR == 5'd4)) PREG[4] <= PWDATA;
-        if(_WE && (PWADDR == 5'd5)) PREG[5] <= PWDATA;
-        if(_WE && (PWADDR == 5'd6)) PREG[6] <= PWDATA;
-        if(_WE && (PWADDR == 5'd7)) PREG[7] <= PWDATA;
-        if(_WE && (PWADDR == 5'd8)) PREG[8] <= PWDATA;
-        if(_WE && (PWADDR == 5'd9)) PREG[9] <= PWDATA;
-        if(_WE && (PWADDR == 5'd10)) PREG[10] <= PWDATA;
-        if(_WE && (PWADDR == 5'd11)) PREG[11] <= PWDATA;
-        if(_WE && (PWADDR == 5'd12)) PREG[12] <= PWDATA;
-        if(_WE && (PWADDR == 5'd13)) PREG[13] <= PWDATA;
-        if(_WE && (PWADDR == 5'd14)) PREG[14] <= PWDATA;
-        if(_WE && (PWADDR == 5'd15)) PREG[15] <= PWDATA;
-        if(_WE && (PWADDR == 5'd16)) PREG[16] <= PWDATA;
-        if(_WE && (PWADDR == 5'd17)) PREG[17] <= PWDATA;
-        if(_WE && (PWADDR == 5'd18)) PREG[18] <= PWDATA;
-        if(_WE && (PWADDR == 5'd19)) PREG[19] <= PWDATA;
-        if(_WE && (PWADDR == 5'd20)) PREG[20] <= PWDATA;
-        if(_WE && (PWADDR == 5'd21)) PREG[21] <= PWDATA;
-        if(_WE && (PWADDR == 5'd22)) PREG[22] <= PWDATA;
-        if(_WE && (PWADDR == 5'd23)) PREG[23] <= PWDATA;
-        if(_WE && (PWADDR == 5'd24)) PREG[24] <= PWDATA;
-        if(_WE && (PWADDR == 5'd25)) PREG[25] <= PWDATA;
-        if(_WE && (PWADDR == 5'd26)) PREG[26] <= PWDATA;
-        if(_WE && (PWADDR == 5'd27)) PREG[27] <= PWDATA;
-        if(_WE && (PWADDR == 5'd28)) PREG[28] <= PWDATA;
-        if(_WE && (PWADDR == 5'd29)) PREG[29] <= PWDATA;
-        if(_WE && (PWADDR == 5'd30)) PREG[30] <= PWDATA;
-        if(_WE && (PWADDR == 5'd31)) PREG[31] <= PWDATA;
+        _PWE <= PWE;
+        if(_PWE && (PWADDR == 5'd0)) PREG[0] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd1)) PREG[1] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd2)) PREG[2] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd3)) PREG[3] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd4)) PREG[4] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd5)) PREG[5] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd6)) PREG[6] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd7)) PREG[7] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd8)) PREG[8] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd9)) PREG[9] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd10)) PREG[10] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd11)) PREG[11] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd12)) PREG[12] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd13)) PREG[13] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd14)) PREG[14] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd15)) PREG[15] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd16)) PREG[16] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd17)) PREG[17] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd18)) PREG[18] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd19)) PREG[19] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd20)) PREG[20] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd21)) PREG[21] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd22)) PREG[22] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd23)) PREG[23] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd24)) PREG[24] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd25)) PREG[25] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd26)) PREG[26] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd27)) PREG[27] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd28)) PREG[28] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd29)) PREG[29] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd30)) PREG[30] <= PWDATA;
+        if(_PWE && (PWADDR == 5'd31)) PREG[31] <= PWDATA;
       end
    end
    
@@ -333,6 +339,7 @@ module core_reg
       end
    end
 
+   // Program counter write
    always @(posedge CLK) begin
       if(!RST_N) begin
          PC <= 0;
