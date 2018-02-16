@@ -437,6 +437,7 @@ void print_call_time(param_t* param) {
     { param->call_time[ROT], "ROT" },
     { param->call_time[IN], "IN" },
     { param->call_time[OUT], "OUT" }
+
   };
   sort(mnemonic_cnts.begin(), mnemonic_cnts.end(), greater<pair<unsigned, string>>());
   Loop(i, mnemonic_cnts.size()) {
