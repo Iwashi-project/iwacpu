@@ -336,7 +336,7 @@ void decode_all(param_t* param) {
         }
         else print_unknown_inst(param, 1399, i, inst);
         break;
-      case 0b0000001: // IN or OUT
+      case 0b0101101: // custom-1
         if ((inst & 0x7000) == 0x0000) {
           decode_i_type(param, i, inst);
           if((param->decoded)[i][2] == 0 && (param->decoded)[i][3] == 0) (param->decoded)[i][0] = IN;
@@ -347,9 +347,34 @@ void decode_all(param_t* param) {
           if((param->decoded)[i][2] == 0 && (param->decoded)[i][3] == 0) (param->decoded)[i][0] = OUT;
           else print_unknown_inst(param, 1420, i, inst);
         }
+        else print_unknown_inst(param, 1499, i, inst);
         break;
-      default:
-        print_unknown_inst(param, 1500, i, inst);
+      case 0b1011011: // custom-2
+      decode_r_type(param, i, inst);
+      switch (inst & 0x7000) {
+        case 0x0000:
+          if (inst >> 25 == 0b0000000) (param->decoded)[i][0] = MVPTG;
+          else if (inst >> 25 == 0b0100000) (param->decoded)[i][0] = MVGTP;
+          else print_unknown_inst(param, 1510, i, inst);
+          break;
+        case 0x1000:
+          if (inst >> 25 == 0b0000000) (param->decoded)[i][0] = MVGTO;
+          else print_unknown_inst(param, 1520, i, inst);
+          break;
+        case 0x2000:
+          if (inst >> 25 == 0b0000000) (param->decoded)[i][0] = MVNPCTG;
+          else if (inst >> 25 == 0b0100000) (param->decoded)[i][0] = MVGTNPC;
+          else print_unknown_inst(param, 1530, i, inst);
+          break;
+        case 0x7000:
+          if (inst >> 25 == 0b0000000) (param->decoded)[i][0] = IRET;
+          else print_unknown_inst(param, 1540, i, inst);
+          break;
+        default:
+          print_unknown_inst(param, 1599, i, inst);
       }
+      default:
+        print_unknown_inst(param, 9999, i, inst);
+    }
   }
 }

@@ -24,7 +24,8 @@ void init_param (param_t* param) {
   Loop(i, 128) param->call_time[i] = 0;
   param->elf_flag = false;
   param->elf_seek = 0;
-
+  param->mmu_control = true;
+  
   //csr_table
   param->csr_table = {
 
@@ -130,6 +131,16 @@ void print_standard_reg(param_t* param) {
     if (i % 8 == 0) printf("\n");
     printf("r%02d:%08X ", i, param->reg[i]);
   }
+  printf("\n");
+  Loop(i, 32) {
+    if (i % 8 == 0) printf("\n");
+    printf("p%02d:%08X ", i, param->preg[i]);
+  }
+  printf("\n");
+  printf("\nMMU_Control %d", param->mmu_control);
+  printf("\n OS_handler %08X", param->os_handler_addr);
+  printf("\n        NPC %08X", param->npc);
+  printf("\nCounter_reg %08X", param->counter_reg);
   /*printf("\n");
   Loop(i, 32) {
     if (i % 8 == 0) printf("\n");

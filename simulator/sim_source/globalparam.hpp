@@ -26,7 +26,7 @@ using namespace std;
 
 #define RBUFSIZE 65536
 #define READELF_REDIRECT_FILENAME (string)".readelf_tmp"
-#define ELF_TEXT_RBUF_SIZE 0x
+#define TIME_INT_PERIOD 1000
 
 #define Loop(i, n) for(int i = 0; i < (int)n; i++)
 #define Loop1(i, n) for(int i = 1; i <= (int)n; i++)
@@ -65,6 +65,11 @@ struct param_t {
   bool contest;
   int reg[32];
   float freg[32];
+  unsigned preg[32];
+  bool mmu_control;
+  unsigned os_handler_addr;
+  unsigned npc;
+  unsigned counter_reg;
   unsigned csr[4096];
   unordered_map<unsigned, unsigned> mem;
   unsigned long long cnt;
@@ -92,7 +97,8 @@ enum inst_t {
   FEQS, FLTS, FLES, FMVSX, FMVXS, FCVTSW, FCVTWS, FSQRTS, FSGNJXS,
   CSRRW, CSRRS, CSRRC, CSRRWI, CSRRSI, CSRRCI,
   SCALL, SBREAK, WFI, FENCE,
-  ROT, IN, OUT
+  ROT, IN, OUT,
+  MVPTG, MVGTP, MVGTO, MVNPCTG, MVGTNPC, IRET
 };
 
 void init_param(param_t* param);

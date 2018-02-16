@@ -123,9 +123,24 @@ void update_csr(param_t* param) {
   return;
 }
 
+void timer_interruption_event(param_t* param) {
+  param->counter_reg = 0;
+  param->mmu_control = false;
+  param->npc = param->pc;
+  param->pc = param->os_handler_addr;
+  if (param->step) printf("TIMER INTERRUPTION EVENT!\n");
+  return;
+}
+
+
 void exec_main(param_t* param) {
   param->cnt++;
   update_csr(param);
+  if (param->mmu_control) param->counter_reg++;
+  if (param->counter_reg >= TIME_INT_PERIOD) {
+    timer_interruption_event(param);
+    return;
+  }
   if (param->trace <= param->cnt) {
     if (param->trace + TRACE_SIZE <= param->cnt) exit(EXIT_SUCCESS);
     printf("%lld, %d\n", param->cnt, param->pc);
@@ -572,6 +587,33 @@ void exec_main(param_t* param) {
     if (param->step) printf("fence\n");
     pc_inclement(param);
     return;
+  case MVPTG:
+    set_r_type(param, &rd, &rs1, &rs2);
+    if (param->step) printf("mvptg %%r%d, %%p%d\n", rd, rs1);
+    if (rd != 0) param->reg[rd] = param->preg[rs1];
+    pc_inclement(param);
+  case MVGTP:
+    set_r_type(param, &rd, &rs1, &rs2);
+    if (param->step) printf("mvptg %%p%d, %%r%d\n", rd, rs1);
+    if (rd != 0) param->preg[rd] = param->reg[rs1];
+    pc_inclement(param);
+  case MVGTO:
+    set_r_type(param, &rd, &rs1, &rs2);
+    if (param->step) printf("mvgto %%r%d\n", rs1);
+    if (rd != 0) param->os_handler_addr = param->reg[rs1];
+    pc_inclement(param);
+  case MVNPCTG:
+    set_r_type(param, &rd, &rs1, &rs2);
+    if (param->step) printf("mvnpctg %%r%d\n", rd);
+    if (rd != 0) param->reg[rd] = param->os_handler_addr;
+    pc_inclement(param);
+  case MVGTNPC:
+    set_r_type(param, &rd, &rs1, &rs2);
+    if (param->step) printf("mvptg %%p%d, %%r%d\n", rd, rs1);
+    if (rd != 0) param->preg[rd] = param->reg[rs1];
+    pc_inclement(param);
+  case IRET:
+
   default:
     printf("unknown fatal error, exit\n");
     exit_message(param);
