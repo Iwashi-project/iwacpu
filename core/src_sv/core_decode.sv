@@ -1,3 +1,4 @@
+// vim: ft=verilog
 module core_decode
 (
   input RST_N,

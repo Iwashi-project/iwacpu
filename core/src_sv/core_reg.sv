@@ -1,3 +1,4 @@
+// vim: ft=verilog
 module core_reg
   (
    input RST_N,
