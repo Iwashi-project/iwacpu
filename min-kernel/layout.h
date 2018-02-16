@@ -1,9 +1,10 @@
 /*
- * 0x00000000 
+ * 0x00000000
  *   kernel entry
+ * (0x00000200)
  *   kernel temp
  * 0x00001000
- *   kernel code
+ *   kernel image
  * 0x00002000
  *   kernel data
  *   kernel stack
