@@ -1,5 +1,7 @@
 #include "custom.h"
 
+.section .boot
+
 .globl _start
 .globl entry
 _start:

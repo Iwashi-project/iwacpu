@@ -3,6 +3,8 @@
  *   kernel entry
  *   kernel temp
  * 0x00001000
+ *   kernel code
+ * 0x00002000
  *   kernel data
  *   kernel stack
  * 0x00005000
@@ -29,7 +31,7 @@
  *    HOGEHOGE
  */
 
-#define KERN_TEMP 0x600
+#define KERN_TEMP 0x200
 #define HOGEHOGE 0x15000
 
 #define PROC_BASE(X) (0x6000 + (X)*0x5000)
