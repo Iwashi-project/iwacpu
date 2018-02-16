@@ -18,14 +18,14 @@ void init_param (param_t* param) {
   param->f_display = false; // 浮動小数点表示
   param->warn = false; // 警告表示
   param->cnt = 0; // 命令数カウント
-  param->contest = true;
+  param->contest = false;
   param->breakcnt = ULONG_MAX;
   param->max_mem_no = 0; // 最大使用メモリ番号
   Loop(i, 128) param->call_time[i] = 0;
   param->elf_flag = false;
   param->elf_seek = 0;
-  param->mmu_control = true;
-  
+  param->mmu_control = false;
+
   //csr_table
   param->csr_table = {
 

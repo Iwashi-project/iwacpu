@@ -108,6 +108,16 @@ inline int float_to_int(float x) {
   return ret;
 }
 
+unsigned addr_cvt(param_t* param, unsigned x) {
+  if (param->mmu_control) {
+    if ((x >> 12) >= 0x20) { printf("memory size exceeded, when PC = %d, cnt = %lld\n", param->pc, param->cnt); exit(EXIT_FAILURE); }
+    else {
+      return param->preg[x >> 12] + (x & 0xfff);
+    }
+  }
+  else return x;
+}
+
 void update_csr(param_t* param) {
   // fflags(0x001), frm(0x002), fcsr(0x003)
   if ((param->csr[0x001] | (param->csr[0x002] << 5)) != param->csr[0x003]) {
@@ -201,7 +211,7 @@ void exec_main(param_t* param) {
     if (param->step) printf("lb %%r%d, %%r%d, $0x%x\n", rd, rs1, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    if (rd != 0) param->reg[rd] = (char)(0x000000ff & param->mem[evac]);
+    if (rd != 0) param->reg[rd] = (char)(0x000000ff & param->mem[addr_cvt(param, evac)]);
     pc_inclement(param);
     return;
   case LH:
@@ -209,7 +219,7 @@ void exec_main(param_t* param) {
     if (param->step) printf("lh %%r%d, %%r%d, $0x%x\n", rd, rs1, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    if (rd != 0) param->reg[rd] = (short)(0x0000ffff & param->mem[evac]);
+    if (rd != 0) param->reg[rd] = (short)(0x0000ffff & param->mem[addr_cvt(param, evac)]);
     pc_inclement(param);
     return;
   case LW:
@@ -217,7 +227,7 @@ void exec_main(param_t* param) {
     if (param->step) printf("lw %%r%d, %%r%d, $0x%x\n", rd, rs1, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    if (rd != 0) param->reg[rd] = (int)(param->mem[evac]);
+    if (rd != 0) param->reg[rd] = (int)(param->mem[addr_cvt(param, evac)]);
     pc_inclement(param);
     return;
   case LBU:
@@ -225,7 +235,7 @@ void exec_main(param_t* param) {
     if (param->step) printf("lbu %%r%d, %%r%d, $0x%x\n", rd, rs1, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    if (rd != 0) param->reg[rd] = (0x000000ff & param->mem[evac]);
+    if (rd != 0) param->reg[rd] = (0x000000ff & param->mem[addr_cvt(param, evac)]);
     pc_inclement(param);
     return;
   case LHU:
@@ -233,7 +243,7 @@ void exec_main(param_t* param) {
     if (param->step) printf("lhu %%r%d, %%r%d, $0x%x\n", rd, rs1, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    if (rd != 0) param->reg[rd] = (0x0000ffff & param->mem[evac]);
+    if (rd != 0) param->reg[rd] = (0x0000ffff & param->mem[addr_cvt(param, evac)]);
     pc_inclement(param);
     return;
   case SB:
@@ -241,7 +251,7 @@ void exec_main(param_t* param) {
     if (param->step) printf("sb %%r%d, %%r%d, $0x%x\n", rs1, rs2, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    param->mem[evac] = 0x000000ff & param->reg[rs2];
+    param->mem[addr_cvt(param, evac)] = 0x000000ff & param->reg[rs2];
     pc_inclement(param);
     return;
   case SH:
@@ -249,7 +259,7 @@ void exec_main(param_t* param) {
     if (param->step) printf("sh %%r%d, %%r%d, $0x%x\n", rs1, rs2, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    param->mem[evac] = 0x0000ffff & param->reg[rs2];
+    param->mem[addr_cvt(param, evac)] = 0x0000ffff & param->reg[rs2];
     pc_inclement(param);
     return;
   case SW:
@@ -257,7 +267,7 @@ void exec_main(param_t* param) {
     if (param->step) printf("sw %%r%d, %%r%d, $0x%x\n", rs1, rs2, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    param->mem[evac] = param->reg[rs2];
+    param->mem[addr_cvt(param, evac)] = param->reg[rs2];
     pc_inclement(param);
     return;
   case ADDI:
@@ -391,7 +401,7 @@ void exec_main(param_t* param) {
     if (param->step) printf("flw %%f%d, %%r%d, $0x%x\n", rd, rs1, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    ifm.u = param->mem[evac];
+    ifm.u = param->mem[addr_cvt(param, evac)];
     if (rd != 0) { param->freg[rd] = ifm.f; warn_nan(param); }
     pc_inclement(param);
     return;
@@ -401,7 +411,7 @@ void exec_main(param_t* param) {
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
     ifm.f = param->freg[rs2];
-    param->mem[evac] = ifm.u;
+    param->mem[addr_cvt(param, evac)] = ifm.u;
     pc_inclement(param);
     return;
   case FADDS:
@@ -592,28 +602,36 @@ void exec_main(param_t* param) {
     if (param->step) printf("mvptg %%r%d, %%p%d\n", rd, rs1);
     if (rd != 0) param->reg[rd] = param->preg[rs1];
     pc_inclement(param);
+    return;
   case MVGTP:
     set_r_type(param, &rd, &rs1, &rs2);
     if (param->step) printf("mvptg %%p%d, %%r%d\n", rd, rs1);
-    if (rd != 0) param->preg[rd] = param->reg[rs1];
+    param->preg[rd] = param->reg[rs1];
     pc_inclement(param);
+    return;
   case MVGTO:
     set_r_type(param, &rd, &rs1, &rs2);
     if (param->step) printf("mvgto %%r%d\n", rs1);
-    if (rd != 0) param->os_handler_addr = param->reg[rs1];
+    param->os_handler_addr = param->reg[rs1];
     pc_inclement(param);
+    return;
   case MVNPCTG:
     set_r_type(param, &rd, &rs1, &rs2);
     if (param->step) printf("mvnpctg %%r%d\n", rd);
-    if (rd != 0) param->reg[rd] = param->os_handler_addr;
+    if (rd != 0) param->reg[rd] = param->npc;
     pc_inclement(param);
+    return;
   case MVGTNPC:
     set_r_type(param, &rd, &rs1, &rs2);
-    if (param->step) printf("mvptg %%p%d, %%r%d\n", rd, rs1);
-    if (rd != 0) param->preg[rd] = param->reg[rs1];
+    if (param->step) printf("mvgtnpc %%r%d\n", rs1);
+    param->npc = param->reg[rs1];
     pc_inclement(param);
+    return;
   case IRET:
-
+    if (param->step) printf("iret\n");
+    param->mmu_control = true;
+    exec_jmp_fread(param, param->npc);
+    return;
   default:
     printf("unknown fatal error, exit\n");
     exit_message(param);
