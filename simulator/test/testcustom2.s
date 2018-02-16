@@ -1,0 +1,23 @@
+lui %r5, $0x10000
+lui %r6, $0x15000
+lui %r7, $0x1a000
+mvgtp %p1, %r5 ; img:0x01000 -> 0x10000
+mvgtp %p2, %r6 ; img:0x02000 -> 0x15000
+mvgtp %p3, %r7 ; img:0x03000 -> 0x1a000
+set %r10, $0x5a
+set %r11, $0x5b
+set %r12, $0x5c
+sw %r5, %r10, $0x4 ; M[0x10004] = 0x5a
+sw %r6, %r11, $0x8 ; M[0x15008] = 0x5b
+sw %r7, %r12, $0xc ; M[0x1a00c] = 0x5c
+set %r1, mmu_start
+mvgtnpc %r1 ; npc = mmu_start
+iret
+
+mmu_start:
+lui %r15, $0x1000
+lui %r16, $0x2000
+lui %r17, $0x3000
+lw %r20, %r15, $0x4 ; %r20 = 0x5a
+lw %r21, %r16, $0x8 ; %r21 = 0x5b
+lw %r22, %r17, $0xc ; %r22 = 0x5c

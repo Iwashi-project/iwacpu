@@ -29,7 +29,13 @@ unordered_map<string, struct r_factors> r_type = {
   {  "fcvtws", {0b1100000,    RM, 0b1010011, FXS} },
   {  "fsqrts", {0b0101100,    RM, 0b1010011, FUNARY} },
   { "fsgnjxs", {0b0010000, 0b010, 0b1010011, FSTD} },
-  {     "rot", {0b0000000, 0b001, 0b0001011, UNARY} }
+  {     "rot", {0b0000000, 0b001, 0b0001011, UNARY} },
+  {   "mvptg", {0b0000000, 0b000, 0b1011011, MVPTG} },
+  {   "mvgtp", {0b0100000, 0b000, 0b1011011, MVGTP} },
+  {   "mvgto", {0b0000000, 0b001, 0b1011011, OUT} },
+  { "mvnpctg", {0b0000000, 0b010, 0b1011011, IN} },
+  { "mvgtnpc", {0b0100000, 0b010, 0b1011011, OUT} },
+  {    "iret", {0b0000000, 0b111, 0b1011011, NOARG} },
 };
 
 unordered_map<string, struct i_factors> i_type = {
@@ -46,7 +52,7 @@ unordered_map<string, struct i_factors> i_type = {
   {   "lbu", {0b100, 0b0000011, STD} },
   {   "lhu", {0b101, 0b0000011, STD} },
   {   "flw", {0b010, 0b0000111, FL} },
-  {    "in", {0b000, 0b0000001, IN} }
+  {    "in", {0b001, 0b0101011, IN} }
 };
 
 unordered_map<string, struct i_factors> s_type = {
@@ -85,7 +91,10 @@ const char reg_pattern[16][4] = {
   { 'f', 'f', 'f', 'f' }, //FUNARY
   { 'r', 'r', 'r', 'r' }, //UNARY
   { 'r', 'r', 'r', 'r' }, //IN
-  { 'r', 'r', 'r', 'r' }  //OUT
+  { 'r', 'r', 'r', 'r' }, //OUT
+  { 'r', 'p', 'r', 'r' }, //MVPTG
+  { 'p', 'r', 'r', 'r' }, //MVGTP
+  { 'r', 'r', 'r', 'r' }, //NOARG
 };
 
 unsigned set_regn(param_t *param, unsigned k, proc_t proc) {
@@ -143,10 +152,10 @@ unsigned encoding(param_t *param) {
   //R-type
   if ((itr_r = r_type.find(param->buf[0])) != r_type.end()) {
     proc_t proc = (itr_r->second).proc;
-    rd = set_regn(param, 1, proc);
-    rs1 = set_regn(param, 2, proc);
+    rd = (proc == OUT || proc == NOARG) ? 0 : set_regn(param, 1, proc);
+    rs1 = (proc == IN || proc == NOARG) ? 0 : set_regn(param, 2, proc);
     if (proc == SHIFT) rs2 = set_shamt(param, 3);
-    else if (proc == FSX || proc == FXS || proc == FUNARY || proc == UNARY) rs2 = 0;
+    else if (proc == FSX || proc == FXS || proc == FUNARY || proc == UNARY || proc == IN || proc == OUT || proc == MVPTG || proc == MVGTP || proc == NOARG) rs2 = 0;
     else rs2 = set_regn(param, 3, proc);
     result = (itr_r->second).funct7 << 25 | rs2 << 20 | rs1 << 15
            | (itr_r->second).funct3 << 12 | rd << 7 | (itr_r->second).opcode;
