@@ -597,6 +597,20 @@ void exec_main(param_t* param) {
     if (param->step) printf("fence\n");
     pc_inclement(param);
     return;
+  case LRW:
+  case SCW:
+  case AMOSWAPW:
+  case AMOADDW:
+  case AMOXORW:
+  case AMOANDW:
+  case AMOORW:
+  case AMOMINW:
+  case AMOMAXW:
+  case AMOMINUW:
+  case AMOMAXUW:
+    if (param->step) printf("atomic instruction\n");
+    pc_inclement(param);
+    return;
   case MVPTG:
     set_r_type(param, &rd, &rs1, &rs2);
     if (param->step) printf("mvptg %%r%d, %%p%d\n", rd, rs1);

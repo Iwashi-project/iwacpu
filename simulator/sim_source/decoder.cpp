@@ -318,6 +318,52 @@ void decode_all(param_t* param) {
           print_unknown_inst(param, 1349, i, inst);
         }
         break;
+      case 0b0101111: // atomic
+        decode_r_type(param, i, inst);
+        if ((inst & 0x7000) == 0x2000) {
+          switch (inst >> 27) {
+          case 0b00010:
+            (param->decoded)[i][0] = LRW;
+            break;
+          case 0b00011:
+            (param->decoded)[i][0] = SCW;
+            break;
+          case 0b00001:
+            (param->decoded)[i][0] = AMOSWAPW;
+            break;
+          case 0b00000:
+            (param->decoded)[i][0] = AMOADDW;
+            break;
+          case 0b00100:
+            (param->decoded)[i][0] = AMOXORW;
+            break;
+          case 0b01100:
+            (param->decoded)[i][0] = AMOANDW;
+            break;
+          case 0b01000:
+            (param->decoded)[i][0] = AMOORW;
+            break;
+          case 0b10000:
+            (param->decoded)[i][0] = AMOMINW;
+            break;
+          case 0b10100:
+            (param->decoded)[i][0] = AMOMAXW;
+            break;
+          case 0b11000:
+            (param->decoded)[i][0] = AMOMINUW;
+            break;
+          case 0b11100:
+            (param->decoded)[i][0] = AMOMAXUW;
+            break;
+          default:
+            print_unknown_inst(param, 1369, i, inst);
+            break;
+          }
+        }
+        else {
+          print_unknown_inst(param, 1369, i, inst);
+        }
+        break;
       case 0b0001111: // fence
         decode_i_type(param, i, inst);
         switch (inst & 0x7000) {
@@ -325,14 +371,14 @@ void decode_all(param_t* param) {
           (param->decoded)[i][0] = FENCE;
           break;
         default:
-          print_unknown_inst(param, 1359, i, inst);
+          print_unknown_inst(param, 1370, i, inst);
         }
         break;
       case 0b0001011: // custom-0
         if ((inst & 0x7000) == 0x1000) {
           decode_r_type(param, i, inst);
           if((param->decoded)[i][3] == 0) (param->decoded)[i][0] = ROT;
-          else print_unknown_inst(param, 1310, i, inst);
+          else print_unknown_inst(param, 1380, i, inst);
         }
         else print_unknown_inst(param, 1399, i, inst);
         break;
