@@ -1,7 +1,16 @@
+#include "stdint.h"
+
 inline uint8_t read_byte() {
+    uint8_t r;
+    uint32_t t;
     __asm__(
-            ".long 0xhogehoge" // TODO
+            "sw x1, %0\n\t"
+            IN(00001) "\n\t"
+            "sw x1, %1\n\t"
+            "lw x1, %0\n\t"
+            : "=A"(t), "=A"(r)
            );
+    return r;
 };
 
 inline uint32_t read_uint() {
@@ -13,11 +22,16 @@ inline uint32_t read_uint() {
 };
 
 inline void write_byte(uint8_t x) {
+    uint32_t t;
     __asm__(
-            ".long 0xhogehoge" // TODO
+            "sw x1, %0\n\t"
+            "lw x1, %1\n\t"
+            OUT(00001) "\n\t"
+            "lw x1, %0\n\t"
+            : "=A"(t) : "A"(x)
            );
 }
 
 void print(const char *s);
-void print_int(int x);
-void print_hex(int x);
+void print_int(int32_t x);
+void print_hex(int32_t x);

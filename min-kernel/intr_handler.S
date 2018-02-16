@@ -1,3 +1,6 @@
+#include "layout.h"
+#include "custom.h"
+
 .globl intr_handler_entry
 intr_handler_entry:
   sw  x1, (KERN_TEMP + 0x00)(x0)
@@ -31,7 +34,7 @@ intr_handler_entry:
   sw x29, (KERN_TEMP + 0x70)(x0)
   sw x30, (KERN_TEMP + 0x74)(x0)
   sw x31, (KERN_TEMP + 0x78)(x0)
-  .long 0xhogehoge # TODO mvnpctg %x1
+  MVNPCTG(00001) # mvnpctg %x1
   sw  x1, (KERN_TEMP + 0x80)(x0)
   j intr_handler
 
@@ -69,72 +72,72 @@ intr_handler_end:
   lw x31, (KERN_TEMP + 0x78)(x0)
 
   lw  x1, (KERN_TEMP + 0x80)(x0)
-  .long 0xhogehoge # TODO mvgtnpc %x1
+  MVGTNPC(00001) # mvgtnpc %x1
 
   lw  x1, (KERN_TEMP + 0x84)(x0)
-  .long 0xhogehoge # TODO mvgtp %p0, %x1
+  MVGTP(00000, 00001) # mvgtp %p0, %x1
   lw  x1, (KERN_TEMP + 0x88)(x0)
-  .long 0xhogehoge # TODO mvgtp %p1, %x1
+  MVGTP(00001, 00001) # mvgtp %p1, %x1
   lw  x1, (KERN_TEMP + 0x8c)(x0)
-  .long 0xhogehoge # TODO mvgtp %p2, %x1
+  MVGTP(00010, 00001) # mvgtp %p2, %x1
   lw  x1, (KERN_TEMP + 0x90)(x0)
-  .long 0xhogehoge # TODO mvgtp %p3, %x1
+  MVGTP(00011, 00001) # mvgtp %p3, %x1
   lw  x1, (KERN_TEMP + 0x94)(x0)
-  .long 0xhogehoge # TODO mvgtp %p4, %x1
+  MVGTP(00100, 00001) # mvgtp %p4, %x1
   lw  x1, (KERN_TEMP + 0x98)(x0)
-  .long 0xhogehoge # TODO mvgtp %p5, %x1
+  MVGTP(00101, 00001) # mvgtp %p5, %x1
   lw  x1, (KERN_TEMP + 0x9c)(x0)
-  .long 0xhogehoge # TODO mvgtp %p6, %x1
+  MVGTP(00110, 00001) # mvgtp %p6, %x1
   lw  x1, (KERN_TEMP + 0xa0)(x0)
-  .long 0xhogehoge # TODO mvgtp %p7, %x1
+  MVGTP(00111, 00001) # mvgtp %p7, %x1
   lw  x1, (KERN_TEMP + 0xa4)(x0)
-  .long 0xhogehoge # TODO mvgtp %p8, %x1
+  MVGTP(01000, 00001) # mvgtp %p8, %x1
   lw  x1, (KERN_TEMP + 0xa8)(x0)
-  .long 0xhogehoge # TODO mvgtp %p9, %x1
+  MVGTP(01001, 00001) # mvgtp %p9, %x1
   lw  x1, (KERN_TEMP + 0xac)(x0)
-  .long 0xhogehoge # TODO mvgtp %p10, %x1
+  MVGTP(01010, 00001) # mvgtp %p10, %x1
   lw  x1, (KERN_TEMP + 0xb0)(x0)
-  .long 0xhogehoge # TODO mvgtp %p11, %x1
+  MVGTP(01011, 00001) # mvgtp %p11, %x1
   lw  x1, (KERN_TEMP + 0xb4)(x0)
-  .long 0xhogehoge # TODO mvgtp %p12, %x1
+  MVGTP(01100, 00001) # mvgtp %p12, %x1
   lw  x1, (KERN_TEMP + 0xb8)(x0)
-  .long 0xhogehoge # TODO mvgtp %p13, %x1
+  MVGTP(01101, 00001) # mvgtp %p13, %x1
   lw  x1, (KERN_TEMP + 0xbc)(x0)
-  .long 0xhogehoge # TODO mvgtp %p14, %x1
+  MVGTP(01110, 00001) # mvgtp %p14, %x1
   lw  x1, (KERN_TEMP + 0xc0)(x0)
-  .long 0xhogehoge # TODO mvgtp %p15, %x1
+  MVGTP(01111, 00001) # mvgtp %p15, %x1
   lw  x1, (KERN_TEMP + 0xc4)(x0)
-  .long 0xhogehoge # TODO mvgtp %p16, %x1
+  MVGTP(10000, 00001) # mvgtp %p16, %x1
   lw  x1, (KERN_TEMP + 0xc8)(x0)
-  .long 0xhogehoge # TODO mvgtp %p17, %x1
+  MVGTP(10001, 00001) # mvgtp %p17, %x1
   lw  x1, (KERN_TEMP + 0xcc)(x0)
-  .long 0xhogehoge # TODO mvgtp %p18, %x1
+  MVGTP(10010, 00001) # mvgtp %p18, %x1
   lw  x1, (KERN_TEMP + 0xd0)(x0)
-  .long 0xhogehoge # TODO mvgtp %p19, %x1
+  MVGTP(10011, 00001) # mvgtp %p19, %x1
   lw  x1, (KERN_TEMP + 0xd4)(x0)
-  .long 0xhogehoge # TODO mvgtp %p20, %x1
+  MVGTP(10100, 00001) # mvgtp %p20, %x1
   lw  x1, (KERN_TEMP + 0xd8)(x0)
-  .long 0xhogehoge # TODO mvgtp %p21, %x1
+  MVGTP(10101, 00001) # mvgtp %p21, %x1
   lw  x1, (KERN_TEMP + 0xdc)(x0)
-  .long 0xhogehoge # TODO mvgtp %p22, %x1
+  MVGTP(10110, 00001) # mvgtp %p22, %x1
   lw  x1, (KERN_TEMP + 0xe0)(x0)
-  .long 0xhogehoge # TODO mvgtp %p23, %x1
+  MVGTP(10111, 00001) # mvgtp %p22, %x1
   lw  x1, (KERN_TEMP + 0xe4)(x0)
-  .long 0xhogehoge # TODO mvgtp %p24, %x1
+  MVGTP(11000, 00001) # mvgtp %p22, %x1
   lw  x1, (KERN_TEMP + 0xe8)(x0)
-  .long 0xhogehoge # TODO mvgtp %p25, %x1
+  MVGTP(11001, 00001) # mvgtp %p22, %x1
   lw  x1, (KERN_TEMP + 0xec)(x0)
-  .long 0xhogehoge # TODO mvgtp %p26, %x1
+  MVGTP(11010, 00001) # mvgtp %p22, %x1
   lw  x1, (KERN_TEMP + 0xf0)(x0)
-  .long 0xhogehoge # TODO mvgtp %p27, %x1
+  MVGTP(11011, 00001) # mvgtp %p22, %x1
   lw  x1, (KERN_TEMP + 0xf4)(x0)
-  .long 0xhogehoge # TODO mvgtp %p28, %x1
+  MVGTP(11100, 00001) # mvgtp %p22, %x1
   lw  x1, (KERN_TEMP + 0xf8)(x0)
-  .long 0xhogehoge # TODO mvgtp %p29, %x1
+  MVGTP(11101, 00001) # mvgtp %p22, %x1
   lw  x1, (KERN_TEMP + 0xfc)(x0)
-  .long 0xhogehoge # TODO mvgtp %p30, %x1
+  MVGTP(11110, 00001) # mvgtp %p22, %x1
   lw  x1, (KERN_TEMP + 0x100)(x0)
-  .long 0xhogehoge # TODO mvgtp %p31, %x1
+  MVGTP(11111, 00001) # mvgtp %p22, %x1
 
   lw  x1, (KERN_TEMP + 0x00)(x0)
-  .long 0xhogehoge # TODO iret
+  IRET # TODO iret

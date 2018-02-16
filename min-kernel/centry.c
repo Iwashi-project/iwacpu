@@ -1,5 +1,6 @@
 #include "proc.h"
 #include "layout.h"
+#include "io.h"
 
 #include "stdint.h"
 
@@ -12,10 +13,10 @@ void load_binary(void *addr, uint32_t count) {
 
 void centry(void) {
 
-    load_binary(PROC_BASE(0), 0x1000);
+    load_binary((void*)PROC_BASE(0), 0x1000);
     init_proc(0);
 
-    load_binary(PROC_BASE(1), 0x1000);
+    load_binary((void*)PROC_BASE(1), 0x1000);
     init_proc(1);
 
     nprocs = 2;
@@ -23,12 +24,12 @@ void centry(void) {
 
 
     for(int i=0; i<32-1; i++) {
-        *(uint32_t*)KERN_TEMP[i] = curproc->regs[i+1];
+        ((uint32_t*)KERN_TEMP)[i] = curproc->regs[i+1];
     }
-    *(uint32_t*)KERN_TEMP[31] = curproc->nextpc;
+    ((uint32_t*)KERN_TEMP)[31] = curproc->next_pc;
 
     for(int i=0; i<32; i++) {
-        *(uint32_t*)KERN_TEMP[32+i] = curproc->page_maps[i];
+        ((uint32_t*)KERN_TEMP)[32+i] = curproc->page_maps[i];
     }
 
     extern void intr_handler_end(void);
