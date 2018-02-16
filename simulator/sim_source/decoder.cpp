@@ -1,8 +1,8 @@
 #include "decoder.hpp"
 
 inline void print_unknown_inst(param_t* param, int x, int i, unsigned inst) {
-  printf("warning$%d: unknown %dth instruction of 0x%08X.\n", x, param->rbuf_begin + i, inst);
-  (param->decoded)[i][0] = inst;
+  // printf("warning$%d: unknown %dth instruction of 0x%08X.\n", x, param->rbuf_begin + i, inst);
+  (param->decoded)[i][0] = UINT_MAX;
 }
 
 inline void decode_sb_type(param_t* param, int i, int inst) {

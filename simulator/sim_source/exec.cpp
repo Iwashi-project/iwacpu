@@ -647,7 +647,7 @@ void exec_main(param_t* param) {
     exec_jmp_fread(param, param->npc);
     return;
   default:
-    printf("unknown fatal error, exit\n");
+    printf("unknown instruction, exit\n");
     exit_message(param);
   }
   return;
