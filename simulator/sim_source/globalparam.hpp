@@ -3,11 +3,9 @@
 
 #include <iostream>
 #include <climits>
+#include <fstream>
 #include <algorithm>
 #include <bitset>
-#include <iostream>
-#include <climits>
-#include <algorithm>
 #include <vector>
 #include <queue>
 #include <list>
@@ -27,17 +25,18 @@
 using namespace std;
 
 #define RBUFSIZE 65536
-#define ELF_ADDR 0x80000000
-#define ELF_OFFSET 0x1000
+#define READELF_REDIRECT_FILENAME (string)".readelf_tmp"
 #define ELF_TEXT_RBUF_SIZE 0x
 
 #define Loop(i, n) for(int i = 0; i < (int)n; i++)
 #define Loop1(i, n) for(int i = 1; i <= (int)n; i++)
 
-struct hash_list_t {
-  unsigned key;
-  unsigned val;
-  hash_list_t* next_p;
+struct elf_data_t {
+  string name;
+  string type;
+  unsigned addr;
+  unsigned offset;
+  unsigned size;
 };
 
 union int_float_mover {
@@ -77,6 +76,9 @@ struct param_t {
   unsigned last_written_csr;
   map<unsigned, string> csr_table;
   map<string, unsigned> csr_rtable;
+  vector<elf_data_t> elf_data;
+  unsigned elf_addr;
+  unsigned elf_offset;
 };
 
 enum inst_t {

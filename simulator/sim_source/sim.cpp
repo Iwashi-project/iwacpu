@@ -66,8 +66,6 @@ int main(int argc, char *argv[]) {
     }
     else if (strbuf == "-elf") {
       param->elf_flag = true;
-      param->elf_seek = ELF_ADDR - ELF_OFFSET;
-      param->pc = ELF_ADDR;
     }
     else if (strbuf == "-i") {
       ++i;
@@ -96,6 +94,10 @@ int main(int argc, char *argv[]) {
       param->fp = fopen(argv[i], "rb");
       if (param->fp == NULL) { perror("fopen error"); exit(EXIT_FAILURE); }
       if (param->elf_flag) {
+        string cmd = "readelf -S ";
+        cmd += strbuf;
+        cmd += " > " + READELF_REDIRECT_FILENAME;
+        if(system(cmd.c_str()) < 0) { printf("error: %s failed.\n", cmd.c_str()); exit(EXIT_FAILURE); };
         set_elf_data(param);
       }
     }
@@ -120,25 +122,47 @@ int main(int argc, char *argv[]) {
 }
 
 void set_elf_data(param_t *param) {
-  // section table
-  vector<vector<unsigned>> section_table = {
-    { 0x80000000, 0x001000, 0x00948c },
-    { 0x8000948c, 0x00a48c, 0x0008b0 },
-    { 0x80009d3c, 0x00ad3c, 0x0000b0 },
-    { 0x8000a000, 0x00b000, 0x000010 },
-    { 0x8000b000, 0x00c000, 0x000051 },
-    { 0x8000b054, 0x00c054, 0x000008 },
-    { 0x8000b05c, 0x00c05c, 0x000008 },
-    { 0x8000c000, 0x00c064, 0x00903c },
-    { 0x80400000, 0x400000, 0x1a3c7c }
-  };
-  Loop(i, section_table.size()) {
-    if (fseek(param->fp, section_table[i][1], SEEK_SET) != 0) { perror("fseek error"); exit_message(param); }
+  ifstream ifs(READELF_REDIRECT_FILENAME);
+  if (!ifs.is_open()) { perror("fopen error\n"); exit(EXIT_FAILURE); }
+  string readline;
+  while(getline(ifs, readline)) {
+    auto pos = readline.find(".");
+    if(pos != string::npos) {
+      vector<string> vsbuf(5, "");
+      int p = pos;
+      int k = p;
+      Loop(i, 5) {
+        while(readline[k] != ' ') k++;
+        vsbuf[i] = readline.substr(p, k - p);
+        while(readline[k] == ' ') k++;
+        p = k;
+      }
+      param->elf_data.push_back({
+        vsbuf[0],
+        vsbuf[1],
+        (unsigned)strtoul(vsbuf[2].c_str(), NULL, 16),
+        (unsigned)strtoul(vsbuf[3].c_str(), NULL, 16),
+        (unsigned)strtoul(vsbuf[4].c_str(), NULL, 16),
+      });
+    }
+  }
+  ifs.close();
+  string cmd = "rm " + READELF_REDIRECT_FILENAME;
+  if(system(cmd.c_str()) < 0) { printf("error: %s failed.\n", cmd.c_str()); exit(EXIT_FAILURE); };
+  Loop(i, param->elf_data.size()) {
+    if(param->elf_data[i].name == ".text") {
+      param->elf_addr = param->elf_data[i].addr;
+      param->elf_offset = param->elf_data[i].offset;
+      param->elf_seek = param->elf_addr - param->elf_offset;
+      param->pc = param->elf_addr;
+    }
+    if(param->elf_data[i].name.substr(0, 6) == ".debug") continue;
+    if (fseek(param->fp, param->elf_data[i].offset, SEEK_SET) != 0) { perror("fseek error"); exit_message(param); }
     unsigned rbuf[0x80000];
-    unsigned rsize = fread(rbuf, sizeof(unsigned), section_table[i][2] >> 2, param->fp);
+    unsigned rsize = fread(rbuf, sizeof(unsigned), param->elf_data[i].size >> 2, param->fp);
     if (rsize < 0) { perror("fread error"); exit_message(param); }
     Loop(j, rsize) {
-      param->mem[section_table[i][0] + j * 4] = rbuf[j];
+      param->mem[param->elf_data[i].addr + j * 4] = rbuf[j];
     }
   }
   return;
