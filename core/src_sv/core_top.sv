@@ -500,6 +500,7 @@ module core_top
       mmu <= 0;
     end
     osreg <= ((cpu_state == WRITEBACK && !stole) & i_mvgto ) ? rs1 : osreg;
+    npc <= ((cpu_state == WRITEBACK && !stole) & i_mvgtnpc ) ? rs1 : npc;
     mmu <= ((cpu_state == WRITEBACK && !stole) & i_iret) ? 1 : mmu;
   end
 
