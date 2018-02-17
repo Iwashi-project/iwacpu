@@ -4,10 +4,11 @@ ENTRY(_start)
 
 PHDRS
 {
-    boot PT_LOAD FILEHDR PHDRS FLAGS (5);
-    text PT_LOAD FILEHDR PHDRS FLAGS (5);
-    data PT_LOAD FLAGS (6);
-    bss  PT_LOAD FLAGS (6);
+    boot PT_LOAD FLAGS(5);
+    text PT_LOAD FLAGS(5);
+    rodata PT_LOAD FLAGS(6);
+    data PT_LOAD FLAGS(6);
+    bss PT_LOAD FLAGS(6);
 }
 
 SECTIONS
@@ -18,12 +19,16 @@ SECTIONS
     } :boot
 
     . = 0x1000;
+
     .text : {
         *(.text)
     } :text
+    .rodata : {
+        *(.rodata)
+    } :rodata
     .data : {
         *(.data)
-    } :data
+    } :rodata
     .bss : {
         *(.bss)
     } :bss

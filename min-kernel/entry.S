@@ -1,9 +1,8 @@
-#include "custom.h"
-
-.section .boot
+#include <custom.h>
 
 .globl _start
 .globl entry
+.text
 _start:
 entry:
   lui sp, %hi(0x4000 - 4)

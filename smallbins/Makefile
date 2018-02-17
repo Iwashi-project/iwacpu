@@ -11,13 +11,13 @@ ASRCS = $(wildcard *.S)
 OBJS = $(CSRCS:.c=.o) $(ASRCS:.S=.o)
 
 .PHONY: all clean
-all: kernel.bin
+all: $(OBJS:.o=.bin)
 
-kernel.obj: $(OBJS)
+%.obj: %.o
 	$(LD) -T script.ld -o $@ $^
 
-kernel.bin: kernel.obj
-	$(LD) --oformat=binary -o $@ $^
+%.bin: %.obj
+	$(LD) --oformat=binary -o $@ $<
 
 clean:
-	rm -f *.o kernel.bin kernel.obj
+	rm -f *.o *.obj *.bin
