@@ -1,4 +1,4 @@
-PREFIX=~/riscv/bin/riscv32-unknown-linux-gnu-
+PREFIX=riscv32-unknown-linux-gnu-
 CC=$(PREFIX)gcc
 AS=$(PREFIX)as
 LD=$(PREFIX)ld

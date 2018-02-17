@@ -390,7 +390,7 @@ module core_top
   wire[31:0] shifted_pc = pc >> 2;
   wire [3:0] mem_we;
   assign I_MEM_ADDR = (mmu) ? preg[shifted_pc[31:12]] + shifted_pc[11:0] : shifted_pc;
-  assign MEM_ADDR = (mmu) ? preg[alu_result[31:12]] + alu_result[11:0] : alu_result;
+  assign MEM_ADDR = (mmu) ? preg[alu_result[31:12]] + {alu_result[11:2], 2'b00} : {alu_result[31:2], 2'b00};
 
   assign MEM_DATA = (i_sb) ? {4{rs2[7:0]}}:
                    (i_sh) ? {2{rs2[15:0]}}:
@@ -408,7 +408,7 @@ module core_top
   assign mem_we[3] = (i_sb & (alu_result[1:0] == 2'b11)) |
 			   (i_sh & (alu_result[1] == 1'b1)) |
 			   (i_sw);
-  assign MEM_WE = (cpu_state == S_MEMORY && !stole) ? mem_we :4'd0;
+  assign MEM_WE = (cpu_state == MEMORY && !stole) ? mem_we : 4'b0;
  
 
   // 5. 書き戻し
@@ -434,10 +434,18 @@ module core_top
   assign wr_addr = rd_num;
   assign wr_data = (i_lui) ? imm:
                    (i_lw) ? MEM_IN:
-                   (i_lh) ? {16{MEM_IN[15]}, MEM_IN[15:0]}:
-                   (i_lb) ? {24{MEM_IN[7]}, MEM_IN[7:0]}:
-                   (i_lbu) ? {24'b0, MEM_IN[7:0]}:
-                   (i_lhu) ? {16'b0, MEM_IN[15:0]}:
+                   (i_lh & (alu_result[1] == 1'b0)) ? {{16{MEM_IN[15]}}, MEM_IN[15:0]}:
+                   (i_lh & (alu_result[1] == 1'b1)) ? {{16{MEM_IN[31]}}, MEM_IN[31:16]}:
+                   (i_lhu & (alu_result[1] == 1'b0)) ? {16'b0, MEM_IN[15:0]}:
+                   (i_lhu & (alu_result[1] == 1'b1)) ? {16'b0, MEM_IN[31:16]}:
+                   (i_lb & (alu_result[1:0] == 2'b00)) ? {{24{MEM_IN[7]}}, MEM_IN[7:0]}:
+                   (i_lb & (alu_result[1:0] == 2'b01)) ? {{24{MEM_IN[15]}}, MEM_IN[15:8]}:
+                   (i_lb & (alu_result[1:0] == 2'b10)) ? {{24{MEM_IN[23]}}, MEM_IN[23:16]}:
+                   (i_lb & (alu_result[1:0] == 2'b11)) ? {{24{MEM_IN[31]}}, MEM_IN[31:24]}:
+                   (i_lbu & (alu_result[1:0] == 2'b00)) ? {24'b0, MEM_IN[7:0]}:
+                   (i_lbu & (alu_result[1:0] == 2'b01)) ? {24'b0, MEM_IN[15:8]}:
+                   (i_lbu & (alu_result[1:0] == 2'b10)) ? {24'b0, MEM_IN[23:16]}:
+                   (i_lbu & (alu_result[1:0] == 2'b11)) ? {24'b0, MEM_IN[31:24]}:
                    (i_auipc) ? pc_add_imm:
                    (i_jal | i_jalr) ? pc_add_4:
                    (i_mvptg) ? ps1:
