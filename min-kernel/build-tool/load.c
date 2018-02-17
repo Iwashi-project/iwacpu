@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
         memcpy(&buf[p->p_paddr], &elf[p->p_offset], p->p_filesz);
     }
 
-    fwrite(buf, 0x1000, 1, fout);
+    fwrite(buf, 0x2000, 1, fout);
 
     return 0;
 }
