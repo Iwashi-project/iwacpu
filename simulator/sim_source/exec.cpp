@@ -7,8 +7,8 @@ inline void pc_inclement(param_t* param) {
 }
 
 void exec_jmp_fread(param_t* param, unsigned newpc) {
-  if (param->rbuf_begin * param->pc_interval <= newpc && newpc < (param->rbuf_begin + param->rsize) * param->pc_interval) {
-    param->rbuf_p = newpc / param->pc_interval - param->rbuf_begin;
+  if (param->rbuf_begin * param->pc_interval <= addr_cvt(param, newpc) && addr_cvt(param, newpc) < (param->rbuf_begin + param->rsize) * param->pc_interval) {
+    param->rbuf_p = addr_cvt(param, newpc) / param->pc_interval - param->rbuf_begin;
   }
   else {
     if (param->memset) {
@@ -27,7 +27,7 @@ void exec_jmp_fread(param_t* param, unsigned newpc) {
       param->rsize = fread(param->rbuf, sizeof(unsigned), RBUFSIZE, param->fp);
       if (param->rsize < 0) { perror("fread error"); exit_message(param); }
     }
-    param->rbuf_begin = newpc;
+    param->rbuf_begin = addr_cvt(param, newpc) / param->pc_interval;
     param->rbuf_p = 0;
     decode_all(param);
   }
@@ -140,7 +140,7 @@ void timer_interruption_event(param_t* param) {
   param->counter_reg = 0;
   param->mmu_control = false;
   param->npc = param->pc;
-  param->pc = param->os_handler_addr;
+  exec_jmp_fread(param, param->os_handler_addr);
   if (param->step) printf("TIMER INTERRUPTION EVENT!\n");
   return;
 }
