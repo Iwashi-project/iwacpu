@@ -1,6 +1,7 @@
+#include <io.h>
+
 #include "layout.h"
 #include "proc.h"
-#include "io.h"
 
 #include "common.h"
 
