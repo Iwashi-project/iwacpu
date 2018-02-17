@@ -1,8 +1,8 @@
+#include <io.h>
+#include <stdint.h>
+
 #include "proc.h"
 #include "layout.h"
-#include "io.h"
-
-#include "stdint.h"
 
 void load_binary(void *addr, uint32_t count) {
     for(int i=0; i < count; i++) {

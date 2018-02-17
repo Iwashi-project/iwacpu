@@ -7,20 +7,33 @@ inline void pc_inclement(param_t* param) {
 }
 
 void exec_jmp_fread(param_t* param, unsigned newpc) {
-  if (param->rbuf_begin * param->pc_interval <= newpc && newpc < (param->rbuf_begin + RBUFSIZE) * param->pc_interval) {
+  if (param->rbuf_begin * param->pc_interval <= newpc && newpc < (param->rbuf_begin + param->rsize) * param->pc_interval) {
     param->rbuf_p = newpc / param->pc_interval - param->rbuf_begin;
   }
   else {
-    if (fseek(param->fp, newpc / param->pc_interval * 4 - param->elf_seek, SEEK_SET) != 0) { perror("fseek error"); exit_message(param); }
-    param->rsize = fread(param->rbuf, sizeof(unsigned), RBUFSIZE, param->fp);
-    if (param->rsize < 0) { perror("fread error"); exit_message(param); }
+    if (param->memset) {
+      unsigned seek = addr_cvt(param, newpc / param->pc_interval * 4) - param->elf_seek;
+      param->rsize = 0;
+      Loop(i, RBUFSIZE) {
+        unsigned inst = 0;
+        Loop(j, 4) inst |= param->mem[seek + param->pc_interval * i + j] << (8 * j);
+        if (inst == 0x0) break;
+        param->rbuf[i] = inst;
+        param->rsize++;
+      }
+    }
+    else {
+      if (fseek(param->fp, newpc / param->pc_interval * 4 - param->elf_seek, SEEK_SET) != 0) { perror("fseek error"); exit_message(param); }
+      param->rsize = fread(param->rbuf, sizeof(unsigned), RBUFSIZE, param->fp);
+      if (param->rsize < 0) { perror("fread error"); exit_message(param); }
+    }
     param->rbuf_begin = newpc;
     param->rbuf_p = 0;
     decode_all(param);
   }
   param->prepc = param->pc;
   param->pc = newpc;
-  if (param->rsize == 0) { printf("pc %d: no instruction\n", param->pc); exit_message(param); }
+  if (param->rsize == 0) { printf("pc 0x%x: no instruction\n", param->pc); exit_message(param); }
   return;
 }
 
@@ -80,7 +93,7 @@ unsigned char in_data, out_data;
 
 inline void warn_nan(param_t* param) {
   if (isnanf(param->freg[rd])) {
-    printf("\x1b[35mwarning\x1b[39m: nan is written in freg[%d], when PC = %d, cnt = %lld\n", rd, param->pc, param->cnt);
+    printf("\x1b[35mwarning\x1b[39m: nan is written in freg[%d], when PC = %08X (phys %08X), cnt = %lld\n", rd, param->pc, addr_cvt(param, param->pc), param->cnt);
   }
 }
 
@@ -106,16 +119,6 @@ inline int float_to_int(float x) {
     else ret = n - 1;
   }
   return ret;
-}
-
-unsigned addr_cvt(param_t* param, unsigned x) {
-  if (param->mmu_control) {
-    if ((x >> 12) >= 0x20) { printf("memory size exceeded, when PC = %d, cnt = %lld\n", param->pc, param->cnt); exit(EXIT_FAILURE); }
-    else {
-      return param->preg[x >> 12] + (x & 0xfff);
-    }
-  }
-  else return x;
 }
 
 void update_csr(param_t* param) {
@@ -147,7 +150,7 @@ void exec_main(param_t* param) {
   param->cnt++;
   update_csr(param);
   if (param->mmu_control) param->counter_reg++;
-  if (param->counter_reg >= TIME_INT_PERIOD) {
+  if (param->counter_reg >= param->time_int_period) {
     timer_interruption_event(param);
     return;
   }
@@ -211,7 +214,11 @@ void exec_main(param_t* param) {
     if (param->step) printf("lb %%r%d, %%r%d, $0x%x\n", rd, rs1, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    if (rd != 0) param->reg[rd] = (char)(0x000000ff & param->mem[addr_cvt(param, evac)]);
+    if (rd != 0) {
+      param->reg[rd] = 0;
+      Loop(j, 1) param->reg[rd] |= (unsigned)(param->mem[addr_cvt(param, evac + j)] << (8 * j));
+      if (param->reg[rd] & 0x80) param->reg[rd] |= 0xffffff00;
+    }
     pc_inclement(param);
     return;
   case LH:
@@ -219,7 +226,11 @@ void exec_main(param_t* param) {
     if (param->step) printf("lh %%r%d, %%r%d, $0x%x\n", rd, rs1, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    if (rd != 0) param->reg[rd] = (short)(0x0000ffff & param->mem[addr_cvt(param, evac)]);
+    if (rd != 0) {
+      param->reg[rd] = 0;
+      Loop(j, 2) param->reg[rd] |= (unsigned)(param->mem[addr_cvt(param, evac + j)] << (8 * j));
+      if (param->reg[rd] & 0x8000) param->reg[rd] |= 0xffff0000;
+    }
     pc_inclement(param);
     return;
   case LW:
@@ -227,7 +238,10 @@ void exec_main(param_t* param) {
     if (param->step) printf("lw %%r%d, %%r%d, $0x%x\n", rd, rs1, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    if (rd != 0) param->reg[rd] = (int)(param->mem[addr_cvt(param, evac)]);
+    if (rd != 0) {
+      param->reg[rd] = 0;
+      Loop(j, 4) param->reg[rd] |= (unsigned)(param->mem[addr_cvt(param, evac + j)] << (8 * j));
+    }
     pc_inclement(param);
     return;
   case LBU:
@@ -235,7 +249,10 @@ void exec_main(param_t* param) {
     if (param->step) printf("lbu %%r%d, %%r%d, $0x%x\n", rd, rs1, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    if (rd != 0) param->reg[rd] = (0x000000ff & param->mem[addr_cvt(param, evac)]);
+    if (rd != 0) {
+      param->reg[rd] = 0;
+      Loop(j, 1) param->reg[rd] |= (unsigned)(param->mem[addr_cvt(param, evac + j)] << (8 * j));
+    }
     pc_inclement(param);
     return;
   case LHU:
@@ -243,7 +260,10 @@ void exec_main(param_t* param) {
     if (param->step) printf("lhu %%r%d, %%r%d, $0x%x\n", rd, rs1, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    if (rd != 0) param->reg[rd] = (0x0000ffff & param->mem[addr_cvt(param, evac)]);
+    if (rd != 0) {
+      param->reg[rd] = 0;
+      Loop(j, 2) param->reg[rd] |= (unsigned)(param->mem[addr_cvt(param, evac + j)] << (8 * j));
+    }
     pc_inclement(param);
     return;
   case SB:
@@ -251,7 +271,7 @@ void exec_main(param_t* param) {
     if (param->step) printf("sb %%r%d, %%r%d, $0x%x\n", rs1, rs2, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    param->mem[addr_cvt(param, evac)] = 0x000000ff & param->reg[rs2];
+    Loop(j, 1) param->mem[addr_cvt(param, evac + j)] = (unsigned char)(param->reg[rs2] >> (8 * j));
     pc_inclement(param);
     return;
   case SH:
@@ -259,7 +279,7 @@ void exec_main(param_t* param) {
     if (param->step) printf("sh %%r%d, %%r%d, $0x%x\n", rs1, rs2, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    param->mem[addr_cvt(param, evac)] = 0x0000ffff & param->reg[rs2];
+    Loop(j, 2) param->mem[addr_cvt(param, evac + j)] = (unsigned char)(param->reg[rs2] >> (8 * j));
     pc_inclement(param);
     return;
   case SW:
@@ -267,7 +287,7 @@ void exec_main(param_t* param) {
     if (param->step) printf("sw %%r%d, %%r%d, $0x%x\n", rs1, rs2, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    param->mem[addr_cvt(param, evac)] = param->reg[rs2];
+    Loop(j, 4) param->mem[addr_cvt(param, evac + j)] = (unsigned char)(param->reg[rs2] >> (8 * j));
     pc_inclement(param);
     return;
   case ADDI:
@@ -401,7 +421,8 @@ void exec_main(param_t* param) {
     if (param->step) printf("flw %%f%d, %%r%d, $0x%x\n", rd, rs1, imm);
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
-    ifm.u = param->mem[addr_cvt(param, evac)];
+    ifm.u = 0;
+    Loop(j, 4) ifm.u |= (unsigned)(param->mem[addr_cvt(param, evac + j)] << (8 * j));
     if (rd != 0) { param->freg[rd] = ifm.f; warn_nan(param); }
     pc_inclement(param);
     return;
@@ -411,7 +432,7 @@ void exec_main(param_t* param) {
     evac = param->reg[rs1] + imm;
     param->max_mem_no = max(param->max_mem_no, evac);
     ifm.f = param->freg[rs2];
-    param->mem[addr_cvt(param, evac)] = ifm.u;
+    Loop(j, 4) param->mem[addr_cvt(param, evac + j)] = (unsigned char)(ifm.u >> (8 * j));
     pc_inclement(param);
     return;
   case FADDS:
@@ -500,7 +521,7 @@ void exec_main(param_t* param) {
   case CSRRW:
     set_i_type(param, &rd, &rs1, &imm);
     imm &= 0x00000FFF;
-    /* if (param->step) */ printf("\nPC = %08X, inst = %08X : \n", param->pc, param->rbuf[param->rbuf_p]); printf("csrrw %%r%d, %%r%d, %s\n", rd, rs1, param->csr_table[imm].c_str());
+    /* if (param->step) */ printf("csrrw %%r%d, %%r%d, %s\n", rd, rs1, param->csr_table[imm].c_str());
     evac = param->reg[rs1];
     if (rd != 0) param->reg[rd] = param->csr[imm];
     param->csr[imm] = evac;
@@ -510,7 +531,7 @@ void exec_main(param_t* param) {
   case CSRRS:
     set_i_type(param, &rd, &rs1, &imm);
     imm &= 0x00000FFF;
-    /* if (param->step) */ printf("\nPC = %08X, inst = %08X : \n", param->pc, param->rbuf[param->rbuf_p]); printf("csrrs %%r%d, %%r%d, %s\n", rd, rs1, param->csr_table[imm].c_str());
+    /* if (param->step) */ printf("csrrs %%r%d, %%r%d, %s\n", rd, rs1, param->csr_table[imm].c_str());
     evac = param->reg[rs1];
     if (rd != 0) param->reg[rd] = param->csr[imm];
     param->csr[imm] |= evac;
@@ -520,7 +541,7 @@ void exec_main(param_t* param) {
   case CSRRC:
     set_i_type(param, &rd, &rs1, &imm);
     imm &= 0x00000FFF;
-    /* if (param->step) */ printf("\nPC = %08X, inst = %08X : \n", param->pc, param->rbuf[param->rbuf_p]); printf("csrrc %%r%d, %%r%d, %s\n", rd, rs1, param->csr_table[imm].c_str());
+    /* if (param->step) */ printf("csrrc %%r%d, %%r%d, %s\n", rd, rs1, param->csr_table[imm].c_str());
     evac = param->reg[rs1];
     if (rd != 0) param->reg[rd] = param->csr[imm];
     param->csr[imm] &= ~evac;
@@ -530,7 +551,7 @@ void exec_main(param_t* param) {
   case CSRRWI:
     set_i_type(param, &rd, &rs1, &imm);
     imm &= 0x00000FFF;
-    /* if (param->step) */ printf("\nPC = %08X, inst = %08X : \n", param->pc, param->rbuf[param->rbuf_p]); printf("csrrwi %%r%d, %s, $0x%x\n", rd, param->csr_table[imm].c_str(), rs1);
+    /* if (param->step) */ printf("csrrwi %%r%d, %s, $0x%x\n", rd, param->csr_table[imm].c_str(), rs1);
     if (rd != 0) param->reg[rd] = param->csr[imm];
     param->csr[imm] = rs1;
     pc_inclement(param);
@@ -538,7 +559,7 @@ void exec_main(param_t* param) {
   case CSRRSI:
     set_i_type(param, &rd, &rs1, &imm);
     imm &= 0x00000FFF;
-    /* if (param->step) */ printf("\nPC = %08X, inst = %08X : \n", param->pc, param->rbuf[param->rbuf_p]); printf("csrrsi %%r%d, %s, $0x%x\n", rd, param->csr_table[imm].c_str(), rs1);
+    /* if (param->step) */ printf("csrrsi %%r%d, %s, $0x%x\n", rd, param->csr_table[imm].c_str(), rs1);
     if (rd != 0) param->reg[rd] = param->csr[imm];
     param->csr[imm] |= rs1;
     pc_inclement(param);
@@ -546,7 +567,7 @@ void exec_main(param_t* param) {
   case CSRRCI:
     set_i_type(param, &rd, &rs1, &imm);
     imm &= 0x00000FFF;
-    /* if (param->step) */ printf("\nPC = %08X, inst = %08X : \n", param->pc, param->rbuf[param->rbuf_p]); printf("csrrci %%r%d, %s, $0x%x\n", rd, param->csr_table[imm].c_str(), rs1);
+    /* if (param->step) */ printf("csrrci %%r%d, %s, $0x%x\n", rd, param->csr_table[imm].c_str(), rs1);
     if (rd != 0) param->reg[rd] = param->csr[imm];
     param->csr[imm] &= ~rs1;
     pc_inclement(param);

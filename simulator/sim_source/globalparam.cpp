@@ -25,6 +25,8 @@ void init_param (param_t* param) {
   param->elf_flag = false;
   param->elf_seek = 0;
   param->mmu_control = false;
+  param->memset = false;
+  param->time_int_period = 1000; //de
 
   //csr_table
   param->csr_table = {
@@ -152,4 +154,14 @@ void print_standard_reg(param_t* param) {
     }
   }*/
   return;
+}
+
+unsigned addr_cvt(param_t* param, unsigned x) {
+  if (param->mmu_control) {
+    if ((x >> 12) >= 0x20) { printf("memory size exceeded, when PC = %08X (phys %08X), cnt = %lld\n", param->pc, addr_cvt(param, param->pc), param->cnt); exit(EXIT_FAILURE); }
+    else {
+      return param->preg[x >> 12] + (x & 0xfff);
+    }
+  }
+  else return x;
 }
