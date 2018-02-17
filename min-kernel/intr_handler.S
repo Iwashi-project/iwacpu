@@ -1,5 +1,5 @@
+#include <custom.h>
 #include "layout.h"
-#include "custom.h"
 
 .globl intr_handler_entry
 intr_handler_entry:
