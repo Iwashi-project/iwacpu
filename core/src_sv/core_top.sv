@@ -526,7 +526,7 @@ module core_top
     end
     osreg <= ((cpu_state == WRITEBACK && !stole) & i_mvgto ) ? rs1 : osreg;
     npc <= ((cpu_state == WRITEBACK && !stole) & i_mvgtnpc ) ? rs1 : npc;
-    mmu <= ((cpu_state == WRITEBACK && !stole) & i_iret) ? 1 : mmu;
+    mmu <= ((cpu_state == MEMORY && !stole) & i_iret) ? 1 : mmu;
   end
 
 endmodule
