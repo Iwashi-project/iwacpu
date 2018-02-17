@@ -12,7 +12,7 @@ module core_top
     input [31:0] MEM_IN,
     output [31:0] MEM_DATA,
     output [31:0] MEM_ADDR,
-    output MEM_WE,
+    output [3:0] MEM_WE,
 
     // In/Out
     output reg [3:0] ARADDR,
@@ -388,6 +388,7 @@ module core_top
 
   // MMU
   wire[31:0] shifted_pc = pc >> 2;
+  wire [3:0] mem_we;
   assign I_MEM_ADDR = (mmu) ? preg[shifted_pc[31:12]] + shifted_pc[11:0] : shifted_pc;
   assign MEM_ADDR = (mmu) ? preg[alu_result[31:12]] + alu_result[11:0] : alu_result;
 
@@ -395,7 +396,19 @@ module core_top
                    (i_sh) ? {2{rs2[15:0]}}:
                    (i_sw) ? {rs2}:
                    32'd0;
-  assign MEM_WE = (i_sb | i_sh | i_sw) && (cpu_state == MEMORY && !stole);
+  assign mem_we[0] = (i_sb & (alu_result[1:0] == 2'b00)) |
+			   (i_sh & (alu_result[1] == 1'b0)) |
+			   (i_sw);
+  assign mem_we[1] = (i_sb & (alu_result[1:0] == 2'b01)) |
+			   (i_sh & (alu_result[1] == 1'b0)) |
+			   (i_sw);
+  assign mem_we[2] = (i_sb & (alu_result[1:0] == 2'b10)) |
+			   (i_sh & (alu_result[1] == 1'b1)) |
+			   (i_sw);
+  assign mem_we[3] = (i_sb & (alu_result[1:0] == 2'b11)) |
+			   (i_sh & (alu_result[1] == 1'b1)) |
+			   (i_sw);
+  assign MEM_WE = (cpu_state == S_MEMORY && !stole) ? mem_we :4'd0;
  
 
   // 5. 書き戻し
