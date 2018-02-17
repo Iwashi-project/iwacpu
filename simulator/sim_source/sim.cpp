@@ -25,7 +25,7 @@ void run_wave(param_t* param);
 void run_step(param_t* param);
 void print_wave(int mode);
 void print_call_time(param_t* param);
-void set_elf_data(param_t *param);
+// void set_elf_data(param_t *param, string fname);
 
 void sigsegv_handler(int signo) {
   printf("\n\nerror: segmentation fault\n\n");
@@ -63,9 +63,18 @@ int main(int argc, char *argv[]) {
     }
     else if (strbuf == "-f") {
       param->f_display = true;
-    }
+    }/*
     else if (strbuf == "-elf") {
       param->elf_flag = true;
+    }*/
+    else if (strbuf == "-memset") {
+      param->memset = true;
+    }
+    else if (strbuf.substr(0,8) == "-initpc=") {
+      param->pc = strtol((strbuf.substr(8,strbuf.size()-8)).c_str(), NULL, 0);
+    }
+    else if (strbuf.substr(0,8) == "-period=") {
+      param->time_int_period = strtol((strbuf.substr(8,strbuf.size()-8)).c_str(), NULL, 0);
     }
     else if (strbuf == "-i") {
       ++i;
@@ -93,12 +102,22 @@ int main(int argc, char *argv[]) {
       }
       param->fp = fopen(argv[i], "rb");
       if (param->fp == NULL) { perror("fopen error"); exit(EXIT_FAILURE); }
-      if (param->elf_flag) {
-        string cmd = "readelf -S ";
-        cmd += strbuf;
-        cmd += " > " + READELF_REDIRECT_FILENAME;
-        if(system(cmd.c_str()) < 0) { printf("error: %s failed.\n", cmd.c_str()); exit(EXIT_FAILURE); };
-        set_elf_data(param);
+      /*if (param->elf_flag) {
+        set_elf_data(param, strbuf);
+      }*/
+      else if (param->memset) {
+        param->rbuf_begin = 0;
+        do {
+          param->rsize = fread(param->rbuf, sizeof(unsigned), RBUFSIZE, param->fp);
+          if (param->rsize < 0) { perror("fread error"); exit_message(param); }
+          Loop(i, param->rsize) {
+            Loop(j, 4) {
+              param->mem[(param->rbuf_begin + i) * param->pc_interval + j] = (unsigned char)(param->rbuf[i] >> (8 * j));
+            }
+          }
+          param->rbuf_begin += param->rsize;
+        } while (param->rsize > 0);
+        param->rbuf_begin = UINT_MAX - RBUFSIZE;
       }
     }
   }
@@ -120,8 +139,11 @@ int main(int argc, char *argv[]) {
   fclose(param->fp);
   return 0;
 }
-
-void set_elf_data(param_t *param) {
+/*
+void set_elf_data(param_t *param, string fname) {
+  string cmd;
+  cmd = "readelf -S " + fname + " > " + READELF_REDIRECT_FILENAME;
+  if(system(cmd.c_str()) < 0) { printf("error: %s failed.\n", cmd.c_str()); exit(EXIT_FAILURE); };
   ifstream ifs(READELF_REDIRECT_FILENAME);
   if (!ifs.is_open()) { perror("fopen error\n"); exit(EXIT_FAILURE); }
   string readline;
@@ -147,7 +169,7 @@ void set_elf_data(param_t *param) {
     }
   }
   ifs.close();
-  string cmd = "rm " + READELF_REDIRECT_FILENAME;
+  cmd = "rm " + READELF_REDIRECT_FILENAME;
   if(system(cmd.c_str()) < 0) { printf("error: %s failed.\n", cmd.c_str()); exit(EXIT_FAILURE); };
   Loop(i, param->elf_data.size()) {
     if(param->elf_data[i].name == ".text") {
@@ -166,7 +188,7 @@ void set_elf_data(param_t *param) {
     }
   }
   return;
-}
+}*/
 
 inline void preprocess_of_run(param_t* param) {
   if (param->rbuf_p >= param->rsize) {
@@ -309,7 +331,9 @@ void run_step(param_t* param){
             else printf("%s: %08X", s.c_str(), param->csr[param->csr_rtable[s]]);
             continue;
           }
-          printf("M[%x]: %08X", a, param->mem[a]);
+          Loop(j, 4) {
+            printf("M[%x]: %02X,  ", a + j, param->mem[a + j]);
+          }
         }
       }
       else {

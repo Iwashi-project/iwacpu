@@ -25,6 +25,8 @@ void init_param (param_t* param) {
   param->elf_flag = false;
   param->elf_seek = 0;
   param->mmu_control = false;
+  param->memset = false;
+  param->time_int_period = 1000; //default
 
   //csr_table
   param->csr_table = {

@@ -26,7 +26,6 @@ using namespace std;
 
 #define RBUFSIZE 65536
 #define READELF_REDIRECT_FILENAME (string)".readelf_tmp"
-#define TIME_INT_PERIOD 1000
 
 #define Loop(i, n) for(int i = 0; i < (int)n; i++)
 #define Loop1(i, n) for(int i = 1; i <= (int)n; i++)
@@ -71,7 +70,7 @@ struct param_t {
   unsigned npc;
   unsigned counter_reg;
   unsigned csr[4096];
-  unordered_map<unsigned, unsigned> mem;
+  unordered_map<unsigned, unsigned char> mem;
   unsigned long long cnt;
   unsigned long long breakcnt;
   unsigned call_time[256];
@@ -84,6 +83,8 @@ struct param_t {
   vector<elf_data_t> elf_data;
   unsigned elf_addr;
   unsigned elf_offset;
+  bool memset;
+  unsigned time_int_period;
 };
 
 enum inst_t {
