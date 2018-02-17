@@ -33,7 +33,7 @@ void exec_jmp_fread(param_t* param, unsigned newpc) {
   }
   param->prepc = param->pc;
   param->pc = newpc;
-  if (param->rsize == 0) { printf("pc %d: no instruction\n", param->pc); exit_message(param); }
+  if (param->rsize == 0) { printf("pc 0x%x: no instruction\n", param->pc); exit_message(param); }
   return;
 }
 
