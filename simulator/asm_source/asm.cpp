@@ -105,6 +105,9 @@ int main(int argc, char *argv[]) {
     else if (strbuf == "-m") {
       opt_flags[2] = true;
     }
+    else if (strbuf == "-coe") {
+      opt_flags[3] = true;
+    }
     else {
       if (opt_flags[7]) { printf("\x1b[31merror\x1b[39m: unknown option\n"); exit(EXIT_FAILURE); }
       filename = argv[i];
@@ -112,7 +115,7 @@ int main(int argc, char *argv[]) {
     }
   }
   if (!opt_flags[7]) { printf("\x1b[31merror\x1b[39m: specify a file\n"); exit(EXIT_FAILURE); }
-  if (filename.substr(filename.length() - 2, 2) != ".s") {
+  if (!opt_flags[3] && filename.substr(filename.length() - 2, 2) != ".s") {
     printf("\x1b[31merror\x1b[39m: specify an assembly file \"*.s\".\n");
     exit(EXIT_FAILURE);
   }
@@ -125,11 +128,22 @@ int main(int argc, char *argv[]) {
     if (param->mfp == NULL) { perror("fopen error\n"); exit(EXIT_FAILURE); }
   }
 
-  if (opt_flags[1]) {
-    filename = filename.substr(0, filename.length() - 2) + ".coe";
+  if (opt_flags[1] || opt_flags[3]) {
+    if (opt_flags[1]) filename = filename.substr(0, filename.length() - 2) + ".coe";
+    else filename = filename.substr(0, filename.length() - 4) + ".coe";
     param->fp = fopen(filename.c_str(), "w");
     if (param->fp == NULL) { perror("fopen error\n"); exit(EXIT_FAILURE); }
     fprintf(param->fp, "memory_initialization_radix=16;\nmemory_initialization_vector=\n");
+    if (opt_flags[3]) {
+      FILE* ifp;
+      ifp = fopen((filename.substr(0, filename.length() - 4) + ".bin").c_str(), "rb");
+      unsigned in_data;
+      while (true) {
+        int rsize = fread(&in_data, 4, 1, ifp);
+        if (rsize == 0) return 0;
+        if (fprintf(param->fp, "%08X\n", in_data) < 0) { perror("fprintf error"); exit(EXIT_FAILURE); }
+      }
+    }
   }
   else {
     filename = filename.substr(0, filename.length() - 2) + ".bin";
