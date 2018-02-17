@@ -12,7 +12,7 @@ module core_top_top
     input [31:0] MEM_IN,
     output [31:0] MEM_DATA,
     output [31:0] MEM_ADDR,
-    output MEM_WE,
+    output [3:0] MEM_WE,
 
     // In/Out
     output wire [3:0] ARADDR,

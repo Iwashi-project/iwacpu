@@ -408,7 +408,7 @@ module core_top
   assign mem_we[3] = (i_sb & (alu_result[1:0] == 2'b11)) |
 			   (i_sh & (alu_result[1] == 1'b1)) |
 			   (i_sw);
-  assign MEM_WE = (cpu_state == S_MEMORY && !stole) ? mem_we :4'd0;
+  assign MEM_WE = (cpu_state == S_MEMORY && !stole) ? mem_we : 4'b0;
  
 
   // 5. 書き戻し
@@ -434,8 +434,8 @@ module core_top
   assign wr_addr = rd_num;
   assign wr_data = (i_lui) ? imm:
                    (i_lw) ? MEM_IN:
-                   (i_lh) ? {16{MEM_IN[15]}, MEM_IN[15:0]}:
-                   (i_lb) ? {24{MEM_IN[7]}, MEM_IN[7:0]}:
+                   (i_lh) ? {{16{MEM_IN[15]}}, MEM_IN[15:0]}:
+                   (i_lb) ? {{24{MEM_IN[7]}}, MEM_IN[7:0]}:
                    (i_lbu) ? {24'b0, MEM_IN[7:0]}:
                    (i_lhu) ? {16'b0, MEM_IN[15:0]}:
                    (i_auipc) ? pc_add_imm:
