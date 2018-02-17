@@ -45,6 +45,16 @@ output:
   out %r4
   srli %r4, %r4, $8
   jalr %r1, %r1, $0
+start:
+  set %r10, $00ffffff
+loop_top:
+  set %r5, $0
+  set %r6, $1
+  add %r7, %r5, %r6
+  addi %r5, %r6, $0
+  addi %r6, %r7, $0
+  ble %r7, %r10, loop_top
+  jal %r0, start
 
 
 /*
