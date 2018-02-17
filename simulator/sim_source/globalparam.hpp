@@ -109,4 +109,6 @@ void exit_message(param_t* param);
 
 void print_standard_reg(param_t* param);
 
+unsigned addr_cvt(param_t* param, unsigned x);
+
 #endif

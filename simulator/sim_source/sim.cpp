@@ -196,7 +196,7 @@ inline void preprocess_of_run(param_t* param) {
       exec_jmp_fread(param, param->pc);
     }
     else {
-      printf("\n\nPC = %08X\n", param->pc);
+      printf("\n\nPC = %08X (phys %08X)\n", param->pc, addr_cvt(param, param->pc));
       if (param->wave) {
         print_wave(0);
         print_wave(1);
@@ -213,7 +213,7 @@ inline void preprocess_of_run(param_t* param) {
 
 inline void postprocess_of_run(param_t* param) {
   if (param->prepc == param->pc) {
-    printf("\n\nPC = %08X\n", param->pc);
+    printf("\n\nPC = %08X (phys %08X)\n", param->pc, addr_cvt(param, param->pc));
     if (param->wave) {
       print_wave(0);
       print_wave(1);
@@ -255,7 +255,7 @@ void run(param_t* param) {
 
 void run_break(param_t* param) {
   while(1) {
-    if(param->breakpoint == param->pc) {
+    if(param->breakpoint == addr_cvt(param, param->pc)) {
       if(param->breakcnt == ULLONG_MAX || param->breakcnt <= param->cnt + 1) {
         run_step(param); return;
       }
@@ -270,7 +270,7 @@ void run_break(param_t* param) {
 
 void run_wave(param_t* param) {
   while(1) {
-    if(param->breakpoint == param->pc) {
+    if(param->breakpoint == addr_cvt(param, param->pc)) {
       if(param->breakcnt == ULLONG_MAX || param->breakcnt <= param->cnt + 1) {
         run_step(param); return;
       }
@@ -289,7 +289,7 @@ void run_step(param_t* param){
   param->step = true;
   while(1) {
     preprocess_of_run(param);
-	printf("\nPC = %08X, cnt = %lld, inst = %08X : \n", param->pc, param->cnt + 1, param->rbuf[param->rbuf_p]);
+	printf("\nPC = %08X (phys %08X), cnt = %lld, inst = %08X : \n", param->pc, addr_cvt(param, param->pc), param->cnt + 1, param->rbuf[param->rbuf_p]);
     if (param->wave) {
       update_wave1(param);
     }
