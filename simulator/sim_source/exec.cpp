@@ -156,7 +156,7 @@ void exec_main(param_t* param) {
   }
   if (param->trace <= param->cnt) {
     if (param->trace + TRACE_SIZE <= param->cnt) exit(EXIT_SUCCESS);
-    printf("%lld, %d\n", param->cnt, param->pc);
+    printf("%lld, %08X\n", param->cnt, param->pc);
   }
   param->call_time[(param->decoded)[param->rbuf_p][0]]++;
   switch ((param->decoded)[param->rbuf_p][0]) {
@@ -600,6 +600,7 @@ void exec_main(param_t* param) {
     else if (fwrite(&out_data, sizeof(unsigned char), 1, param->ofp) != 1) {
       perror("fwrite error"); exit_message(param);
     }
+    fflush(param->ofp);
     pc_inclement(param);
     return;
   case SCALL:
