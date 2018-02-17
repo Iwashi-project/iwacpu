@@ -13,11 +13,15 @@ OBJS = $(CSRCS:.c=.o) $(ASRCS:.S=.o)
 .PHONY: all clean
 all: kernel.bin
 
+build-tool/load:
+	make -C build-tool
+
 kernel.obj: $(OBJS)
 	$(LD) -T script.ld -o $@ $^
 
-kernel.bin: kernel.obj
-	$(LD) --oformat=binary -o $@ $^
+kernel.bin: kernel.obj build-tool/load
+	build-tool/load $@ $<
 
 clean:
+	make clean -C build-tool
 	rm -f *.o kernel.bin kernel.obj
