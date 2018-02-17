@@ -24,7 +24,7 @@
 
 using namespace std;
 
-#define RBUFSIZE 65536
+#define RBUFSIZE 1024
 #define READELF_REDIRECT_FILENAME (string)".readelf_tmp"
 
 #define Loop(i, n) for(int i = 0; i < (int)n; i++)
