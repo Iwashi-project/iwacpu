@@ -1,50 +1,3 @@
-main:
-  set %r2, $0x00010f00 ; SP、スタックとして32KB*8B=256KBを確保
-  addi %r2, %r2, $-64 ; SP -= 64
-  addi %r3, %r2, $64  ; FP = SP + 64, main()のフレームの出来上がり
-  set %r9, $1   ; const int 1
-loop_top:
-  set %r15, $20  ; fib_rec(20) ~ fib_rec(1) を呼び続ける
-loop_mid:
-  addi %r5, %r15, $0
-  jal %r1, fib_rec
-  jal %r1, output
-  addi %r15, %r15, $-1 ; %r5--
-  blt %r15, %r0, loop_top ; if (%r5 == 1) goto loop_top
-  jal %r0, loop_mid
-fib_rec:
-  addi %r2, %r2, $-64 ; SP -= 64
-  sw %r2, %r1, $16    ; LR退避
-  sw %r2, %r3, $20    ; FP退避
-  addi %r3, %r2, $64  ; FP = SP + 64
-  sw %r2, %r5, $0     ; 第一引数
-  bge %r9, %r5, fib_rec_bge1   ; if (1 >= x) -> bge1
-  addi %r5, %r5, $-1  ; else { val1 = x - 1;
-  jal %r1, fib_rec   ; fib_rec(val1);
-  sw %r2, %r4, $32    ; a[8] = fib_rec(a);
-  lw %r5, %r2, $0     ; 第一引数読み戻し
-  addi %r5, %r5, $-2  ; val2 = x - 2;
-  jal %r1, fib_rec   ; fib_rec(val2);
-  lw %r10, %r2, $32   ; r10 = a[8]
-  add %r4, %r10, %r4   ; return fib_rec(val1) + fib_rec(val2)!
-fib_rec_ret:
-  lw %r1, %r2, $16    ; 退避したLRの読み戻し
-  lw %r3, %r2, $20    ; 退避したFPの読み戻し
-  addi %r2, %r2, $64 ; SP += 64
-  jalr %r1, %r1, $0   ; 呼び出し元の関数に戻る
-fib_rec_bge1:
-  set %r4, $1   ; if (x == 1 || x == 2) return 1
-  beq %r0, %r0, fib_rec_ret ; go back
-output:
-  out %r4
-  srli %r4, %r4, $8
-  out %r4
-  srli %r4, %r4, $8
-  out %r4
-  srli %r4, %r4, $8
-  out %r4
-  srli %r4, %r4, $8
-  jalr %r1, %r1, $0
 start:
   set %r10, $00ffffff
 loop_top:
@@ -53,6 +6,7 @@ loop_top:
   add %r7, %r5, %r6
   addi %r5, %r6, $0
   addi %r6, %r7, $0
+  out %r7
   ble %r7, %r10, loop_top
   jal %r0, start
 
