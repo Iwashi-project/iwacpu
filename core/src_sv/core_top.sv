@@ -41,17 +41,27 @@ module core_top
   );
 
   // debug out
- (* mark_debug = "true" *) wire [31:0] i_mem_in;
- (* mark_debug = "true" *) wire [31:0] i_mem_addr;
- (* mark_debug = "true" *) wire [31:0] mem_in;
- (* mark_debug = "true" *) wire [31:0] mem_data;
- (* mark_debug = "true" *) wire [31:0] mem_addr;
+ (* mark_debug = "true" *) reg [31:0] i_mem_in;
+ (* mark_debug = "true" *) reg [31:0] i_mem_addr;
+ (* mark_debug = "true" *) reg [31:0] mem_in;
+ (* mark_debug = "true" *) reg [31:0] mem_data;
+ (* mark_debug = "true" *) reg [31:0] mem_addr;
 
- assign i_mem_in = I_MEM_IN;
- assign i_mem_addr = I_MEM_ADDR;
- assign mem_in = MEM_IN;
- assign mem_data = MEM_DATA;
- assign mem_addr = MEM_ADDR;
+  always @(posedge CLK) begin
+    if(!RST_N) begin
+      i_mem_in <= 0;
+      i_mem_addr <= 0;
+      mem_in <= 0;
+      mem_data <= 0;
+      mem_addr <= 0;
+    end else begin
+      i_mem_in <= I_MEM_IN;
+      i_mem_addr <= I_MEM_ADDR;
+      mem_in <= MEM_IN;
+      mem_data <= MEM_DATA;
+      mem_addr <= MEM_ADDR;
+    end
+  end
 
   // PC
  (* mark_debug = "true" *) wire [31:0] pc;
@@ -400,9 +410,9 @@ module core_top
   // 4. メモリアクセス
 
   // MMU
-  wire [3:0] mem_we;
+  (* mark_debug = "true" *) wire [3:0] mem_we;
   assign I_MEM_ADDR = (mmu) ? ((preg[pc[31:12]] + pc[11:0]) >> 2) : (pc >> 2);
-  assign MEM_ADDR = (mmu) ? preg[alu_result[31:12]] + {alu_result[11:2], 2'b00} : {alu_result[31:2], 2'b00};
+  assign MEM_ADDR = (mmu) ? ((preg[alu_result[31:12]] + alu_result[11:0]) >> 2) : (alu_result[31:0] >> 2);
 
   assign MEM_DATA = (i_sb) ? {4{rs2[7:0]}}:
                    (i_sh) ? {2{rs2[15:0]}}:
