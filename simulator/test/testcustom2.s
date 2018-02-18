@@ -1,4 +1,3 @@
-in %r31
 lui %r5, $0x1000
 lui %r6, $0x5000
 lui %r7, $0xa000
