@@ -40,6 +40,19 @@ module core_top
 
   );
 
+  // debug out
+ (* mark_debug = "true" *) wire [31:0] i_mem_in;
+ (* mark_debug = "true" *) wire [31:0] i_mem_addr;
+ (* mark_debug = "true" *) wire [31:0] mem_in;
+ (* mark_debug = "true" *) wire [31:0] mem_data;
+ (* mark_debug = "true" *) wire [31:0] mem_addr;
+
+ assign i_mem_in = I_MEM_IN;
+ assign i_mem_addr = I_MEM_ADDR;
+ assign mem_in = MEM_IN;
+ assign mem_data = MEM_DATA;
+ assign mem_addr = MEM_ADDR;
+
   // PC
  (* mark_debug = "true" *) wire [31:0] pc;
  (* mark_debug = "true" *) wire [4:0] rd_num, rs1_num, rs2_num;
