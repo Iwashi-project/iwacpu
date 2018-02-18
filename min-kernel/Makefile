@@ -20,7 +20,7 @@ kernel.obj: $(OBJS)
 	$(LD) -T script.ld -o $@ $^
 
 kernel.bin: kernel.obj build-tool/load
-	build-tool/load $@ $<
+	build-tool/load $@ $< `echo 'obase=10;ibase=16;2000' | bc`
 
 clean:
 	make clean -C build-tool

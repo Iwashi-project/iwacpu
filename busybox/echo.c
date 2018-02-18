@@ -1,10 +1,9 @@
 #include <io.h>
-#include <stdint.h>
 #define CMD_SIZE 1000
 
 void echo (void) {
 
-    char cmd[1000];
+    char cmd[CMD_SIZE];
     for (;;) {
         print("$ ");
         int i;
