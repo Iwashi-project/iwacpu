@@ -1,4 +1,7 @@
-all: sim asm bcvt
+all: sim asm bcvt zerofill
+
+zerofill: os/zerofill.cpp
+	g++ -std=c++1y -Wall -o zerofill os/zerofill.cpp
 
 sim: sim.o exec.o decoder.o globalparam.o
 	g++ -std=c++1y -Ofast -Wall -o sim sim_source/sim.o sim_source/exec.o sim_source/decoder.o sim_source/globalparam.o

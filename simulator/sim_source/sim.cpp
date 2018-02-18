@@ -199,7 +199,7 @@ inline void preprocess_of_run(param_t* param) {
       printf("\n\nPC = %08X (phys %08X)\n", param->pc, addr_cvt(param, param->pc));
       if (param->wave) {
         print_wave(0);
-        print_wave(1);
+        // print_wave(1);
       }
       else print_standard_reg(param);
       printf("\n\nreach end of file.\n");
@@ -216,7 +216,7 @@ inline void postprocess_of_run(param_t* param) {
     printf("\n\nPC = %08X (phys %08X)\n", param->pc, addr_cvt(param, param->pc));
     if (param->wave) {
       print_wave(0);
-      print_wave(1);
+      // print_wave(1);
     }
     else print_standard_reg(param);
     printf("\n\nprogram infinitely loops at pc %08x, simulation stops.\n", param->pc);
@@ -297,7 +297,7 @@ void run_step(param_t* param){
     if (param->wave) {
       update_wave2(param);
       print_wave(0);
-      print_wave(1);
+      // print_wave(1);
     }
     else print_standard_reg(param);
     while(1) {

@@ -49,7 +49,7 @@ module core_top
  (* mark_debug = "true" *) wire i_lui, i_auipc, i_jal, i_jalr, i_beq, i_bne,
        i_blt, i_bge, i_bltu, i_bgeu, i_lb, i_lh, i_lw, i_lbu, i_lhu, i_sb, i_sh,
        i_sw, i_addi, i_slti, i_sltiu, i_xori, i_ori, i_andi, i_slli, i_srli, i_srai,
-       i_add, i_sub, i_sll, i_slt, i_sltu, i_xor, i_srl, i_sra, i_or, i_and, i_rot;
+       i_add, i_sub, i_sll, i_slt, i_sltu, i_xor, i_srl, i_sra, i_or, i_and;
  (* mark_debug = "true" *) wire i_in, i_out;
 
  (* mark_debug = "true" *) reg stole;
@@ -387,9 +387,8 @@ module core_top
   // 4. メモリアクセス
 
   // MMU
-  wire[31:0] shifted_pc = pc >> 2;
   wire [3:0] mem_we;
-  assign I_MEM_ADDR = (mmu) ? preg[shifted_pc[31:12]] + shifted_pc[11:0] : shifted_pc;
+  assign I_MEM_ADDR = (mmu) ? ((preg[pc[31:12]] + pc[11:0]) >> 2) : (pc >> 2);
   assign MEM_ADDR = (mmu) ? preg[alu_result[31:12]] + {alu_result[11:2], 2'b00} : {alu_result[31:2], 2'b00};
 
   assign MEM_DATA = (i_sb) ? {4{rs2[7:0]}}:
@@ -519,14 +518,15 @@ module core_top
       mmu <= 0;
       osreg <= 0;
       npc <= 0;
-    end
+    end else begin
     if (total_cnt == time_period) begin
-      npc <= pc_before + 4;
-      mmu <= 0;
+        npc <= pc_before + 4;
+        mmu <= 0;
+      end
+      osreg <= ((cpu_state == WRITEBACK && !stole) & i_mvgto ) ? rs1 : osreg;
+      npc <= ((cpu_state == WRITEBACK && !stole) & i_mvgtnpc ) ? rs1 : npc;
+      mmu <= ((cpu_state == MEMORY && !stole) & i_iret) ? 1 : mmu;
     end
-    osreg <= ((cpu_state == WRITEBACK && !stole) & i_mvgto ) ? rs1 : osreg;
-    npc <= ((cpu_state == WRITEBACK && !stole) & i_mvgtnpc ) ? rs1 : npc;
-    mmu <= ((cpu_state == MEMORY && !stole) & i_iret) ? 1 : mmu;
   end
 
 endmodule

@@ -29,13 +29,12 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
   unsigned char in_data[0x1000];
-  if (argc != 3) { printf("error: select 2 files\n"); exit(EXIT_FAILURE); }
+  if (argc <= 1) { printf("error: select file\n"); exit(EXIT_FAILURE); }
   FILE *ifp, *ofp;
   ofp = fopen(FNAME, "w");
   if (ofp == NULL) { perror("fopen error"); exit(EXIT_FAILURE); }
-  struct stat statbuf;
-  //
-  Loop1(k, 2) {
+
+  Loop1(k, argc - 1) {
     memset(in_data, 0, 0x1000);
     ifp = fopen(argv[k], "rb");
     if (ifp == NULL) { perror("fopen error"); exit(EXIT_FAILURE); }
