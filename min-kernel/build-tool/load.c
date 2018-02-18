@@ -1,11 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "elf.h"
 
 int main(int argc, char **argv) {
-    if(argc < 3) {
+    if(argc < 4) {
         puts("Usage:");
-        printf("  %s [output bin] [input obj]\n", argv[0]);
+        printf("  %s [output bin] [input obj] [out size]\n", argv[0]);
         return 1;
     }
 
@@ -17,6 +18,12 @@ int main(int argc, char **argv) {
     FILE *fin  = fopen(argv[2], "r");
     if(!fin) {
         perror("fopen input");
+        return 1;
+    }
+
+    const int sz = atoi(argv[3]);
+    if(sz < 0x10) {
+        puts("too small... ?");
         return 1;
     }
 
@@ -41,7 +48,7 @@ int main(int argc, char **argv) {
         memcpy(&buf[p->p_paddr], &elf[p->p_offset], p->p_filesz);
     }
 
-    fwrite(buf, 0x2000, 1, fout);
+    fwrite(buf, sz, 1, fout);
 
     return 0;
 }
