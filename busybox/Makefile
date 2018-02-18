@@ -13,11 +13,14 @@ OBJS = $(CSRCS:.c=.o) $(ASRCS:.S=.o)
 .PHONY: all clean
 all: $(OBJS:.o=.bin)
 
-%.obj: %.o
-	$(LD) -o $@ $^
+build-tool/load:
+	make -C build-tool
 
-%.bin: %.obj
-	$(LD) --oformat=binary -o $@ $<
+%.obj: %.o
+	$(LD) -T script.ld -o $@ $^
+
+%.bin: %.obj build-tool/load
+	build-tool/load $@ $< `echo 'obase=10;ibase=16;1000' | bc`
 
 clean:
 	rm -f *.o *.obj *.bin
