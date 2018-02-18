@@ -103,6 +103,7 @@ module core_top
   (* mark_debug = "true" *) reg [6:0] read_status;
 
   (* mark_debug = "true" *) reg [63:0] total_cnt;
+  (* mark_debug = "true" *) reg [31:0] os_cnt;
 
   localparam s_read_wait = 7'b0000001;
   localparam s_read_wait2 = 7'b0000010;
@@ -128,6 +129,7 @@ module core_top
     if(!RST_N) begin
       cpu_state <= IDLE;
       total_cnt <= 0;
+      os_cnt <= 0;
     end else begin
       if (stole) begin
         cpu_state <= cpu_state;
@@ -140,7 +142,7 @@ module core_top
           FETCH:
           begin
             cpu_state <= DECODE;
-            total_cnt <= (mmu) ? ( (total_cnt == time_period) ? 0 : total_cnt + 1) : 0;
+            total_cnt <= total_cnt + 1;
           end
           DECODE:
           begin
@@ -149,6 +151,7 @@ module core_top
           EXECUTE:
           begin
             cpu_state <= MEMORY;
+            os_cnt <= (mmu) ? ( (os_cnt == time_period) ? 0 : os_cnt + 1) : 0;
           end
           MEMORY:
           begin
@@ -376,20 +379,13 @@ module core_top
       end
   end
 
- (* mark_debug = "true" *) reg tvalid_once;
-
   // Stole
   always @(posedge CLK) begin
     if (!RST_N) begin
       stole <= 0;
-      tvalid_once <= 0;
     end else begin
-      tvalid_once <= (tvalid_once) ? 0 :
-                     0;
-
       stole <= (stole && i_in) ? (((read_status == s_read2) & RVALID & RREADY) ? 0 : 1) :
                (stole && i_out) ? ((BVALID & BREADY) ? 0 : 1) :
-               (stole && !(tvalid_once)) ? 1 :
                ((cpu_state == EXECUTE) && (stole == 0) && (i_in | i_out)) ? 1:
                0;
   end
@@ -485,10 +481,10 @@ module core_top
  (* mark_debug = "true" *) wire [31:0] wr_pc;
 
   assign wr_pc_we = (cpu_state == MEMORY && !stole);
-  assign wr_pc = ( ( (i_beq | i_bne | i_blt | i_bge | i_bltu | i_bgeu) & (alu_result == 32'd1)) | i_jal) ? pc_add_imm:
+  assign wr_pc = (os_cnt == time_period) ? osreg:
+                 ( ( (i_beq | i_bne | i_blt | i_bge | i_bltu | i_bgeu) & (alu_result == 32'd1)) | i_jal) ? pc_add_imm:
                  (i_jalr) ? pc_jalr:
                  (i_iret) ? npc:
-                 (total_cnt == time_period) ? osreg:
                  pc_add_4;
 
 
@@ -542,13 +538,16 @@ module core_top
       osreg <= 0;
       npc <= 0;
     end else begin
-    if (total_cnt == time_period) begin
-        npc <= pc_before + 4;
-        mmu <= 0;
+      if (os_cnt == time_period & (cpu_state == MEMORY)) begin
+          npc <= ( ( (i_beq | i_bne | i_blt | i_bge | i_bltu | i_bgeu) & (alu_result == 32'd1)) | i_jal) ? pc_add_imm:
+                 (i_jalr) ? pc_jalr:
+                 pc_add_4;
+          mmu <= 0;
+      end else begin
+        osreg <= ((cpu_state == WRITEBACK && !stole) & i_mvgto ) ? rs1 : osreg;
+        npc <= ((cpu_state == WRITEBACK && !stole) & i_mvgtnpc ) ? rs1 : npc;
+        mmu <= ((cpu_state == MEMORY && !stole) & i_iret) ? 1 : mmu;
       end
-      osreg <= ((cpu_state == WRITEBACK && !stole) & i_mvgto ) ? rs1 : osreg;
-      npc <= ((cpu_state == WRITEBACK && !stole) & i_mvgtnpc ) ? rs1 : npc;
-      mmu <= ((cpu_state == MEMORY && !stole) & i_iret) ? 1 : mmu;
     end
   end
 
