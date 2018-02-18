@@ -7,7 +7,7 @@ static inline uint8_t read_byte() {
     __asm__(
             "sw x1, %0\n\t"
             IN(00001) "\n\t"
-            "sw x1, %1\n\t"
+            "sb x1, %1\n\t"
             "lw x1, %0\n\t"
             : "=A"(t), "=A"(r)
            );
