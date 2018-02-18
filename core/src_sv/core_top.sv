@@ -151,7 +151,7 @@ module core_top
           EXECUTE:
           begin
             cpu_state <= MEMORY;
-            os_cnt <= (mmu) ? ( (os_cnt == time_period) ? 0 : os_cnt + 1) : 0;
+            os_cnt <= (mmu) ? ( (os_cnt >= time_period & !i_out) ? 0 : os_cnt + 1) : 0;
           end
           MEMORY:
           begin
@@ -291,6 +291,71 @@ module core_top
   // inならrdに書き込むだけ
   // ineをほげする
   // outならr1からoutする
+  //
+  // debug out
+ (* mark_debug = "true" *) reg [3:0] araddr;
+ (* mark_debug = "true" *) reg arready;
+ (* mark_debug = "true" *) reg arvalid;
+
+ (* mark_debug = "true" *) reg [3:0] awaddr;
+ (* mark_debug = "true" *) reg awready;
+ (* mark_debug = "true" *) reg awvalid;
+
+ (* mark_debug = "true" *) reg bready;
+ (* mark_debug = "true" *) reg [1:0] bresp;
+ (* mark_debug = "true" *) reg bvalid;
+
+ (* mark_debug = "true" *) reg rready;
+ (* mark_debug = "true" *) reg [1:0] rresp;
+ (* mark_debug = "true" *) reg rvalid;
+
+ (* mark_debug = "true" *) reg wvalid;
+ (* mark_debug = "true" *) reg wready;
+ (* mark_debug = "true" *) reg [31:0] wdata;
+
+  always @(posedge CLK) begin
+    if(!RST_N) begin
+      araddr <= 0;
+      arready <= 0;
+      arvalid <= 0;
+
+      awaddr <= 0;
+      awready <= 0;
+      awvalid <= 0;
+
+      bready <= 0;
+      bresp <= 0;
+      bvalid <= 0;
+
+      rready <= 0;
+      rresp <= 0;
+      rvalid <= 0;
+
+      wvalid <= 0;
+      wready <= 0;
+      wdata <= 0;
+    end else begin
+      araddr <= ARADDR;
+      arready <= ARREADY;
+      arvalid <= ARVALID;
+
+      awaddr <= AWADDR;
+      awready <= AWREADY;
+      awvalid <= AWVALID;
+
+      bready <= BREADY;
+      bresp <= BRESP;
+      bvalid <= BVALID;
+
+      rready <= RREADY;
+      rresp <= RRESP;
+      rvalid <= RVALID;
+
+      wvalid <= WVALID;
+      wready <= WREADY;
+      wdata <= WDATA;
+    end
+  end
 
   always @(posedge CLK) begin
       if (!RST_N) begin
@@ -312,23 +377,27 @@ module core_top
             case (read_status)
               s_read_wait:
               begin
+                  RREADY <= 0;
                   ARADDR  <= 4'b1000;
                   ARVALID <= (ARVALID & ARREADY) ? 0 : 1;
                   read_status  <= (ARVALID & ARREADY) ? s_read_wait2 : s_read_wait;
               end
               s_read_wait2:
               begin
+                  ARVALID <= 0;
                   RREADY <= (RREADY & RVALID) ? 0 : 1;
                   read_status <= (RREADY & RVALID) ? (RDATA[0] ? s_read : s_read_wait) : s_read_wait2;
               end
               s_read:
               begin
+                  RREADY <= 0;
                   ARADDR  <= 4'b0000;
                   ARVALID <= (ARVALID & ARREADY) ? 0 : 1;
                   read_status  <= (ARVALID & ARREADY) ? s_read2 : s_read;
               end
               s_read2:
               begin
+                  ARVALID <= 0;
                   RREADY <= (RREADY & RVALID) ? 0 : 1;
                   read_status <= (RREADY & RVALID) ? s_read3 : s_read2;
                   rdata <= RDATA;
@@ -342,17 +411,20 @@ module core_top
             case (write_status)
               s_write_wait:
               begin
+                  BREADY <= 0;
                   ARADDR  <= 4'b1000;
                   ARVALID <= (ARVALID & ARREADY) ? 0 : 1;
                   write_status  <= (ARVALID & ARREADY) ? s_write_wait2 : s_write_wait;
               end
               s_write_wait2:
               begin
+                  ARVALID <= 0;
                   RREADY <= (RREADY & RVALID) ? 0 : 1;
                   write_status <= (RREADY & RVALID) ? (RDATA[3] ? s_write_wait : s_write): s_write_wait2;
               end
               s_write:
               begin
+                  RREADY <= 0;
                   AWADDR  <= 4'b0100;
                   WDATA   <= rs1;
                   AWVALID <= 1;
@@ -481,7 +553,7 @@ module core_top
  (* mark_debug = "true" *) wire [31:0] wr_pc;
 
   assign wr_pc_we = (cpu_state == MEMORY && !stole);
-  assign wr_pc = (os_cnt == time_period) ? osreg:
+  assign wr_pc = (os_cnt >= time_period & !i_out) ? osreg:
                  ( ( (i_beq | i_bne | i_blt | i_bge | i_bltu | i_bgeu) & (alu_result == 32'd1)) | i_jal) ? pc_add_imm:
                  (i_jalr) ? pc_jalr:
                  (i_iret) ? npc:
@@ -538,7 +610,7 @@ module core_top
       osreg <= 0;
       npc <= 0;
     end else begin
-      if (os_cnt == time_period & (cpu_state == MEMORY)) begin
+      if (os_cnt >= time_period & !i_out & (cpu_state == MEMORY)) begin
           npc <= ( ( (i_beq | i_bne | i_blt | i_bge | i_bltu | i_bgeu) & (alu_result == 32'd1)) | i_jal) ? pc_add_imm:
                  (i_jalr) ? pc_jalr:
                  pc_add_4;
