@@ -26,7 +26,7 @@ static inline void write_byte(uint8_t x) {
     uint32_t t;
     __asm__(
             "sw x1, %0\n\t"
-            "lw x1, %1\n\t"
+            "lbu x1, %1\n\t"
             OUT(00001) "\n\t"
             "lw x1, %0\n\t"
             : "=A"(t) : "A"(x)
