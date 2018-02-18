@@ -387,9 +387,8 @@ module core_top
   // 4. メモリアクセス
 
   // MMU
-  wire[31:0] shifted_pc = pc >> 2;
   wire [3:0] mem_we;
-  assign I_MEM_ADDR = (mmu) ? preg[shifted_pc[31:12]] + shifted_pc[11:0] : shifted_pc;
+  assign I_MEM_ADDR = (mmu) ? ((preg[pc[31:12]] + pc[11:0]) >> 2) : (pc >> 2);
   assign MEM_ADDR = (mmu) ? preg[alu_result[31:12]] + {alu_result[11:2], 2'b00} : {alu_result[31:2], 2'b00};
 
   assign MEM_DATA = (i_sb) ? {4{rs2[7:0]}}:
