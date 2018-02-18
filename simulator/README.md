@@ -5,6 +5,9 @@
     $ ./sim -elf os/bbl -step
     ...
     $ ./sim -elf os/bbl -breakpoint=0x80000000
+    ..
+    $ ./zerofill file1.bin file2.bin (file3.bin ...)
+    ..
 
 ## ステップ実行において
 
@@ -16,20 +19,4 @@
 
 ## シミュレータ仕様
 
-wfiやfenceはnop扱い
-
-elfの中身を該当するメモリアドレスに格納している(例えば M[80000000]: 1F00006F)
-
-csrの初期値は現在、
-
-param->csr[param->csr_rtable["mip"]] = 0x8;
-
-param->csr[param->csr_rtable["misa"]] =
-
-  (1 << 30) |
-
-  (1 << ('I' - 'A')) |
-
-  (1 << ('A' - 'A'));
-
-param->csr[param->csr_rtable["mhartid"]] = 0;
+いつかまとめる
