@@ -3,8 +3,6 @@
 #define CMD_SIZE 100
 
 void echo (void) {
-    print_hex(0xdeadbeef);
-    print("\n");
     // read proc number & addr
     // r30 <- proc number
     // r31 <- proc addr
@@ -14,12 +12,6 @@ void echo (void) {
             "sw x31, %1\n\t"
             : "=A"(nproc), "=A"(procaddr)
            );
-    print("echo\n");
-    print_int(nproc);
-    print("\n");
-    print_hex(procaddr);
-    print("\n");
-    print("print done\n");
 
     char cmd[CMD_SIZE];
     for (;;) {
@@ -66,6 +58,7 @@ void echo (void) {
                     print_int(curproc->id);
                     print("\n");
 
+                    /*
                     // process registers
                     print("Registers: ");
                     int j;
@@ -74,6 +67,7 @@ void echo (void) {
                         print("\n");
                     }
                     print("\n\n");
+                    */
                 }
             }
         // kill
