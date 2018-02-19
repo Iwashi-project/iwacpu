@@ -4,8 +4,8 @@ AS=$(PREFIX)as
 LD=$(PREFIX)ld
 
 INCLUDE = ../include
-CFLAGS = -march=rv32im -nostdlib -I$(INCLUDE)
-ASFLAGS = -march=rv32im -nostdlib -I$(INCLUDE)
+CFLAGS = -march=rv32i -nostdlib -I$(INCLUDE)
+ASFLAGS = -march=rv32i -nostdlib -I$(INCLUDE)
 CSRCS = $(wildcard *.c)
 ASRCS = $(wildcard *.S)
 OBJS = $(CSRCS:.c=.o) $(ASRCS:.S=.o)
