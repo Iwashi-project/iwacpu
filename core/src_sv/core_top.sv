@@ -151,7 +151,7 @@ module core_top
           EXECUTE:
           begin
             cpu_state <= MEMORY;
-            os_cnt <= (mmu) ? ( (os_cnt >= time_period & !i_out) ? 0 : os_cnt + 1) : 0;
+            os_cnt <= (mmu) ? ( (os_cnt >= time_period & !i_out & !i_in) ? 0 : os_cnt + 1) : 0;
           end
           MEMORY:
           begin
@@ -553,7 +553,7 @@ module core_top
  (* mark_debug = "true" *) wire [31:0] wr_pc;
 
   assign wr_pc_we = (cpu_state == MEMORY && !stole);
-  assign wr_pc = (os_cnt >= time_period & !i_out) ? osreg:
+  assign wr_pc = (os_cnt >= time_period & !i_out & !i_in) ? osreg:
                  ( ( (i_beq | i_bne | i_blt | i_bge | i_bltu | i_bgeu) & (alu_result == 32'd1)) | i_jal) ? pc_add_imm:
                  (i_jalr) ? pc_jalr:
                  (i_iret) ? npc:
@@ -610,7 +610,7 @@ module core_top
       osreg <= 0;
       npc <= 0;
     end else begin
-      if (os_cnt >= time_period & !i_out & (cpu_state == MEMORY)) begin
+      if (os_cnt >= time_period & !i_out & !i_in & (cpu_state == MEMORY)) begin
           npc <= ( ( (i_beq | i_bne | i_blt | i_bge | i_bltu | i_bgeu) & (alu_result == 32'd1)) | i_jal) ? pc_add_imm:
                  (i_jalr) ? pc_jalr:
                  pc_add_4;
