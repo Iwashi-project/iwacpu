@@ -12,6 +12,8 @@ void load_binary(void *addr, uint32_t count) {
 }
 
 void centry(void) {
+    nprocs = 2;
+
     print("Welcome to IWAOS!\n");
 
     print("Load binary for Proc0...\n");
@@ -24,7 +26,6 @@ void centry(void) {
     init_proc(1);
     print("Load Done!\n");
 
-    nprocs = 2;
     curproc = &procs[0];
 
 

@@ -16,9 +16,13 @@ void intr_handler() {
     print_int(curproc->id);
 
     int nextprocid = mod(curproc->id + 1, nprocs);
+    for(; ; nextprocid = mod(nextprocid + 1, nprocs)) {
+        if(procs[nextprocid].live == 1)
+            break;
+    }
     curproc = &procs[nextprocid];
 
-    print("to Proc ");
+    print(" To Proc ");
     print_int(curproc->id);
     write_byte('\n');
 

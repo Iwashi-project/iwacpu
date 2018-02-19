@@ -5,6 +5,7 @@ typedef struct {
     uint32_t regs[32];
     uint32_t page_maps[32];
     uintptr_t next_pc;
+    uint32_t live;
 } proc_t;
 
 void init_proc(int id);

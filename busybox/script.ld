@@ -4,6 +4,7 @@ ENTRY(_start)
 
 PHDRS
 {
+    boot PT_LOAD FLAGS(5);
     text PT_LOAD FLAGS(5);
     rodata PT_LOAD FLAGS(6);
     data PT_LOAD FLAGS(6);
@@ -13,8 +14,8 @@ PHDRS
 SECTIONS
 {
     . = 0;
-
     .text : {
+        entry.o(.text)
         *(.text)
     } :text
     .rodata : {

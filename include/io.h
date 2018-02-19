@@ -39,12 +39,15 @@ static inline void print(const char *s) {
     }
 }
 
-static inline void print_hex(int x) {
-    if(x < 0) {
-        write_byte('-');
-        x = -x;
-    }
+static inline void print_hex2(uint32_t x) {
+    if (x >= 16)
+        print_hex2(x >> 4);
+    x = x % 16;
+    x += x < 10 ? '0' : 'a' - 10;
+    write_byte(x);
+}
 
+static inline void print_hex(uint32_t x) {
     write_byte('0');
     write_byte('x');
 
@@ -53,14 +56,7 @@ static inline void print_hex(int x) {
         return;
     }
 
-    char s[100];
-    int i;
-    s[99] = 0;
-    for(i=98; x; x >>= 4, i--) {
-        int y = x & 0xF; 
-        s[i] = (y < 10) ? ('0' + y) : ('A' - 10 + y);
-    }
-    print(&s[i+1]);
+    print_hex2(x);
 }
 
 static inline void print_int(int x) {
