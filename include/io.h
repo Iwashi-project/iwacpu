@@ -42,9 +42,10 @@ static inline void print(const char *s) {
 static inline void print_hex2(uint32_t x) {
     if (x >= 16)
         print_hex2(x >> 4);
-    x = x % 16;
-    x += x < 10 ? '0' : 'a' - 10;
-    write_byte(x);
+    uint8_t c;
+    c = x % 16;
+    c += c < 10 ? '0' : 'a' - 10;
+    write_byte(c);
 }
 
 static inline void print_hex(uint32_t x) {
