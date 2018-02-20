@@ -43,6 +43,7 @@ void echo (void) {
             int j = 0;
             int k = 0;
             for (i = 0;; i++) {
+                if (cmd[i] == 0) break;
                 if (var_flag) {
                   varchar[k++] = cmd[i];
                 }
