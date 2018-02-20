@@ -133,6 +133,7 @@ void echo (void) {
           for (i = 0; i < CMD_SIZE; i++) {
             v_entry[var[0]][i] = v[i];
           }
+          print(v);
           print(v_entry[var[0]]);
         }
   }
