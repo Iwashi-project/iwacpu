@@ -127,7 +127,8 @@ void echo (void) {
             print("Not implemented!\n");
             continue;
           }
-          v[j] = '\n';
+          v[j++] = '\n';
+          v[j] = '\0';
           for (i = 0; i < 10; i++) {
             v_entry[var[0] - 'a'][i] = v[i];
           }
