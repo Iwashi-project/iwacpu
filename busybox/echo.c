@@ -2,6 +2,8 @@
 #include "../min-kernel/proc.h"
 #define CMD_SIZE 100
 
+char v_entry[256][CMD_SIZE];
+
 void echo (void) {
     // read proc number & addr
     // r30 <- proc number
@@ -46,7 +48,11 @@ void echo (void) {
                     pchar[j++] = cmd[i];
             }
             pchar[j] = '\n';
-            print(pchar);
+            if (pchar[0] == '$') {
+              print(v_entry[pchar[1]]);
+            } else {
+              print(pchar);
+            }
         // ps
         } else if (cmd[0] == 'p' & cmd[1] == 's') {
             for (i = 0; i < nproc; i++) {
@@ -82,8 +88,40 @@ void echo (void) {
                 }
             }
         } else {
+          int var_flag = 1;
+          char var[CMD_SIZE];
+          char v[CMD_SIZE];
+          int j = 0;
+          for (i = 0;; i++) {
+            if (cmd[i] == 0) break;
+            if (cmd[i] == ' ') {
+              var_flag = 1;
+              break;
+            }
+            if (var_flag) {
+              if (cmd[i] == '=') {
+                if (j == 0) break;
+                var[j] = '\0';
+                var_flag = 0;
+                j = 0;
+              }
+              else {
+                var[j++] = cmd[i];
+              }
+            }
+            else {
+              v[j++] = cmd[i];
+            }
+          }
+          if (var_flag) {
             print("Not implemented!\n");
+            continue;
+          }
+          v[j] = '\n';
+          for (i = 0; i < CMD_SIZE; i++) {
+            v_entry[var[0]][i] = v[i];
+          }
         }
-    }
-    return;
+  }
+  return;
 }
