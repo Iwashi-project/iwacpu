@@ -2,8 +2,6 @@
 #include "../min-kernel/proc.h"
 #define CMD_SIZE 100
 
-char v_entry[256][CMD_SIZE];
-
 void echo (void) {
     // read proc number & addr
     // r30 <- proc number
@@ -16,6 +14,7 @@ void echo (void) {
            );
 
     char cmd[CMD_SIZE];
+    char v_entry[256][CMD_SIZE];
     for (;;) {
         int i;
         print("$ ");
@@ -133,6 +132,7 @@ void echo (void) {
           for (i = 0; i < CMD_SIZE; i++) {
             v_entry[var[0]][i] = v[i];
           }
+          print(var);
           print(v);
           print(v_entry[var[0]]);
         }
