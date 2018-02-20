@@ -58,6 +58,7 @@ void echo (void) {
                     pchar[j++] = cmd[i];
             }
             if (var_flag) {
+              print("var_flag is true\n");
               print(v_entry[varchar[0]]);
             }
             else {
