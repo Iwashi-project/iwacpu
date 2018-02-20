@@ -130,7 +130,7 @@ void echo (void) {
           }
           v[j] = '\n';
           for (i = 0; i < 10; i++) {
-            v_entry[var[0]][i] = v[i];
+            v_entry[var[0] - 'a'][i] = v[i];
           }
           print(var);
           print(v);
