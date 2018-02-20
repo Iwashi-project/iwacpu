@@ -57,7 +57,6 @@ void echo (void) {
                     pchar[j++] = cmd[i];
             }
             if (var_flag) {
-              print(varchar);
               print(v_entry[varchar[0] - 'a']);
             }
             else {
@@ -132,9 +131,6 @@ void echo (void) {
           for (i = 0; i < 10; i++) {
             v_entry[var[0] - 'a'][i] = v[i];
           }
-          print(var);
-          print(v);
-          print(v_entry[var[0] - 'a']);
         }
   }
   return;
