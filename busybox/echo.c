@@ -37,20 +37,30 @@ void echo (void) {
         if (cmd[0] == 'e' & cmd[1] == 'c' & cmd[2] == 'h' & cmd[3] == 'o') {
             // echo inside ""
             int inside = 0;
+            int var_flag = 0;
             char pchar[CMD_SIZE];
+            char varchar[CMD_SIZE];
             int j = 0;
+            int k = 0;
             for (i = 0;; i++) {
-                if (cmd[i] == '\"' & inside)
+                if (var_flag) {
+                  varchar[k++] = cmd[i];
+                }
+                else if (cmd[i] == '\"' & inside)
                     break;
                 else if (cmd[i] == '\"' & !inside)
                     inside = 1;
+                else if (cmd[i] == '$' & !inside) {
+                    var_flag = 1;
+                }
                 else if (inside)
                     pchar[j++] = cmd[i];
             }
-            pchar[j] = '\n';
-            if (pchar[0] == '$') {
-              print(v_entry[pchar[1]]);
-            } else {
+            if (var_flag) {
+              print(v_entry[varchar[0]]);
+            }
+            else {
+              pchar[j] = '\n';
               print(pchar);
             }
         // ps
