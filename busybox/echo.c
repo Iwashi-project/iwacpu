@@ -58,7 +58,7 @@ void echo (void) {
                     pchar[j++] = cmd[i];
             }
             if (var_flag) {
-              print("var_flag is true\n");
+              print(varchar);
               print(v_entry[varchar[0]]);
             }
             else {
@@ -130,6 +130,9 @@ void echo (void) {
             continue;
           }
           v[j] = '\n';
+          print(var);
+          print("\n");
+          print(v);
           for (i = 0; i < CMD_SIZE; i++) {
             v_entry[var[0]][i] = v[i];
           }
