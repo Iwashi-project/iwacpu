@@ -130,12 +130,10 @@ void echo (void) {
             continue;
           }
           v[j] = '\n';
-          print(var);
-          print("\n");
-          print(v);
           for (i = 0; i < CMD_SIZE; i++) {
             v_entry[var[0]][i] = v[i];
           }
+          print(v_entry[var[0]]);
         }
   }
   return;
