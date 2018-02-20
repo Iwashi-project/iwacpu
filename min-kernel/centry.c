@@ -12,7 +12,7 @@ void load_binary(void *addr, uint32_t count) {
 }
 
 void centry(void) {
-    nprocs = 2;
+    nprocs = 3;
 
     print("Welcome to IWAOS!\n");
 
@@ -26,6 +26,11 @@ void centry(void) {
     init_proc(1);
     print("Load Done!\n");
 
+    print("Load binary for Proc2...\n");
+    load_binary((void*)PROC_BASE(2), 0x1000);
+    init_proc(2);
+    print("Load Done!\n");
+
     curproc = &procs[0];
 
 
@@ -37,8 +42,6 @@ void centry(void) {
     for(int i=0; i<32; i++) {
         ((uint32_t*)KERN_TEMP)[32+i] = curproc->page_maps[i];
     }
-
-    print("Switch to Proc 0!\n");
 
     extern void intr_handler_end(void);
     intr_handler_end();

@@ -11,8 +11,6 @@ void intr_handler() {
     }
     curproc->next_pc = ((uint32_t*)KERN_TEMP)[31];
 
-
-    print("Switching From Proc ");
     print_int(curproc->id);
 
     int nextprocid = mod(curproc->id + 1, nprocs);
@@ -21,10 +19,6 @@ void intr_handler() {
             break;
     }
     curproc = &procs[nextprocid];
-
-    print(" To Proc ");
-    print_int(curproc->id);
-    write_byte('\n');
 
     for(int i=0; i<32-1; i++) {
         ((uint32_t*)KERN_TEMP)[i] = curproc->regs[i+1];
