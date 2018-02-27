@@ -204,7 +204,7 @@ inline void preprocess_of_run(param_t* param) {
       else print_standard_reg(param);
       printf("\n\nreach end of file.\n");
       printf("cnt = %lld, max_mem_no = %u\n", param->cnt, param->max_mem_no);
-      // print_call_time(param);
+      print_call_time(param);
       fclose(param->fp);
       exit(EXIT_SUCCESS);
     }
@@ -221,7 +221,7 @@ inline void postprocess_of_run(param_t* param) {
     else print_standard_reg(param);
     printf("\n\nprogram infinitely loops at pc %08x, simulation stops.\n", param->pc);
     printf("cnt = %lld, max_mem_no = %u\n", param->cnt, param->max_mem_no);
-    // print_call_time(param);
+    print_call_time(param);
     fclose(param->fp);
     exit(EXIT_SUCCESS);
   }
@@ -460,8 +460,12 @@ void print_call_time(param_t* param) {
     { param->call_time[CSRRCI], "CSRRCI" },
     { param->call_time[ROT], "ROT" },
     { param->call_time[IN], "IN" },
-    { param->call_time[OUT], "OUT" }
-
+    { param->call_time[MVPTG], "MVPTG" },
+    { param->call_time[MVGTP], "MVGTP" },
+    { param->call_time[MVGTO], "MVGTO" },
+    { param->call_time[MVNPCTG], "MVNPCTG" },
+    { param->call_time[MVGTNPC], "MVGTNPC" },
+    { param->call_time[IRET], "IRET" }
   };
   sort(mnemonic_cnts.begin(), mnemonic_cnts.end(), greater<pair<unsigned, string>>());
   Loop(i, mnemonic_cnts.size()) {
