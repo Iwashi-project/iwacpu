@@ -469,8 +469,9 @@ void print_call_time(param_t* param) {
   };
   sort(mnemonic_cnts.begin(), mnemonic_cnts.end(), greater<pair<unsigned, string>>());
   Loop(i, mnemonic_cnts.size()) {
-    printf("%10s: %13d times, %lf %%\n",
-      mnemonic_cnts[i].second.c_str(), mnemonic_cnts[i].first, (double)mnemonic_cnts[i].first * 100 /param->cnt);
+    if (mnemonic_cnts[i].first != 0)
+      printf("%10s: %13d times, %lf %%\n",
+        mnemonic_cnts[i].second.c_str(), mnemonic_cnts[i].first, (double)mnemonic_cnts[i].first * 100 /param->cnt);
   }
   return;
 }
