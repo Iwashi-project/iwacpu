@@ -36,6 +36,9 @@ intr_handler_entry:
   sw x31, (KERN_TEMP + 0x78)(x0)
   MVNPCTG(00001) # mvnpctg %x1
   sw  x1, (KERN_TEMP + 0x7c)(x0)
+
+  lui sp, %hi(0x4000 - 4)
+  addi sp, sp, %lo(0x4000 - 4)
   j intr_handler
 
 .globl intr_handler_end
